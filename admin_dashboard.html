@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>
+        Admin Dashboard • Parking Management
+    </title>
+    <!-- Google Font: Poppins -->
+     <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+    <!-- Chart.js (for any quick charts if needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js">
+    </script>
+    <script>
+    (function() {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            
+            window.location.replace('./index.html');
+        }
+    })();
+</script>
+    
+    <!-- Global Theme Styles -->
+    <link href="style.css" rel="stylesheet" />
+    <!-- Page-specific Styles -->
+    <link href="admin_dashboard.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- Header (Common Component: Manager Navbar) -->
+    <style>
+        .manager-navbar {
+            background: #03011d;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+
+        .manager-navbar .navbar-brand span {
+            color: #fff;
+        }
+
+        .manager-navbar .export-btn {
+            background: #194542;
+            color: #fff;
+            border: 0;
+        }
+
+        .manager-navbar .export-btn:hover {
+            filter: brightness(1.05);
+        }
+    </style>
+    <nav class="navbar navbar-expand-lg navbar-dark manager-navbar px-3">
+        <div class="dropdown p-2">
+            <button class="btn btn-outline-light me-2 d-lg-none " data-bs-target="#managerNav" data-bs-toggle="dropdown"
+                type="button">
+                <i class="fa-solid fa-bars">
+                </i>
+            </button>
+            <ul class="dropdown-menu ex w-100">
+                <li><a class="dropdown-item" href="./admin_dashboard.html"><i class="fa-solid fa-gauge-high me-2">
+                        </i>KPI Dashboard</a></li>
+                <li><a class="dropdown-item" href="./reports_page.html"><i class="fa-solid fa-chart-line me-2">
+                        </i>Weekly Report</a></li>
+                <li><a class="dropdown-item" href="#revenue"><i class="fa-solid fa-coins me-2">
+                        </i>Revenue by Lot</a></li>
+                <li><a class="dropdown-item" href="#occupancy"><i class="fa-solid fa-chart-area me-2">
+                        </i>Occupancy Trends</a></li>
+                <li><a class="dropdown-item" href="#penalties"><i class="fa-solid fa-ticket me-2">
+                        </i>Penalties Overview</a></li>
+                <li><a class="dropdown-item" href="#settings"><i class="fa-solid fa-user-gear me-2">
+                        </i>Profile &amp; Settings</a></li>
+            </ul>
+        </div>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="./reports_page.html">
+            <img alt="Logo" onerror="this.onerror=null;this.src=logo.png"
+                src="logo.png"
+                style="height:28px;" />
+            <span>
+                Management
+            </span>
+        </a>
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <div class="dropdown me-2">
+                <button class="btn btn-sm btn-outline-light dropdown-toggle" data-bs-toggle="dropdown"
+                    id="weekSelectorBtn">
+                    <i class="fa-solid fa-calendar-week me-1">
+                    </i>
+                    <span id="weekLabel">
+                        This Week
+                    </span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                    <li>
+                        <a class="dropdown-item week-option" data-label="This Week" href="#">
+                            This Week
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item week-option" data-label="Last Week" href="#">
+                            Last Week
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <a class="btn btn-sm export-btn" href="#export" id="exportPdfBtn">
+                <i class="fa-solid fa-file-pdf me-1">
+                </i>
+                Export PDF
+            </a>
+            <div class="dropdown">
+                <a class="btn btn-sm btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-user-tie me-1">
+                    </i>
+                    Mritunjay
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                    <li>
+                        <a class="dropdown-item" href="#settings">
+                            <i class="fa-solid fa-user-gear me-2">
+                            </i>
+                            Settings
+                        </a>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider" />
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" id="logoutButton">
+                            <i class="fa-solid fa-right-from-bracket me-2"></i>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Main Layout: Sidebar + Main Content -->
+    <div class="d-flex">
+        <!-- Sidebar (Common Component) -->
+        <style>
+            :root {
+                --primary: #03011d;
+                --secondary: #194542;
+            }
+
+            #sidebarManager {
+                width: 280px;
+                background: var(--primary);
+                color: #eaeaea;
+            }
+
+            #sidebarManager .brand-area {
+                border-bottom: 1px solid rgba(255, 255, 255, .08);
+            }
+
+            #sidebarManager .profile {
+                background: rgba(255, 255, 255, .05);
+                border-radius: .5rem;
+            }
+
+            #sidebarManager .nav .nav-link {
+                color: #cfd3d7;
+                border-radius: .35rem;
+            }
+
+            #sidebarManager .nav .nav-link:hover {
+                background: rgba(25, 69, 66, .25);
+                color: #fff;
+            }
+
+            #sidebarManager .nav .nav-link.active {
+                background: var(--secondary);
+                color: #fff;
+            }
+        </style>
+      
+        <!-- Main content area -->
+        <div class="flex-grow-1 d-flex flex-column">
+            <main class="main-panel container-fluid py-3">
+                <!-- Breadcrumbs -->
+
+                <div class="bg-muted border-bottom">
+                    <nav aria-label="breadcrumb" class="container-max pill-nav mb-0 d-none d-md-flex">
+                        <span class="breadcrumb-item">
+                            <a href="./entry_gate.html">Entry Gate</a>
+                        </span>
+                        <span class="breadcrumb-item">
+                            <a href="./exit_gate.html">Exit Gate</a>
+                        </span>
+                        <span class="breadcrumb-item">
+                            <a href="./index.html">Login</a>
+                        </span>
+                        <span class="breadcrumb-item">
+                            <a href="./admin_dashboard.html" class="active">Admin</a>
+                        </span>
+                        <span class="breadcrumb-item">
+                            <a href="./records_search.html">Records</a>
+                        </span>
+                        <span class="breadcrumb-item">
+                            <a href="./reports_page.html">Reports</a>
+                        </span>
+                    </nav>
+
+                    <div class="dropdown d-md-none p-2">
+                        <button class="btn btn-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <i class="fa-solid fa-bars me-2"></i> Quick Navigation
+                        </button>
+                        <ul class="dropdown-menu w-100">
+                            <li><a class="dropdown-item" href="./entry_gate.html">Entry Gate</a></li>
+                            <li><a class="dropdown-item" href="./exit_gate.html">Exit Gate</a></li>
+                            <li><a class="dropdown-item" href="./index.html">Login</a></li>
+                            <li><a class="dropdown-item" href="./admin_dashboard.html">Admin</a></li>
+                            <li><a class="dropdown-item" href="./records_search.html">Records</a></li>
+                            <li><a class="dropdown-item" href="./reports_page.html">Reports</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <h1 class="page-title mb-0">
+                            Admin Dashboard
+                        </h1>
+                        <span class="badge-soft info">
+                            Real-time
+                        </span>
+                    </div>
+                    <div class="view-switcher">
+                        <div class="option active" title="Dashboard">
+                            <i class="fa-solid fa-table-cells-large">
+                            </i>
+                        </div>
+                        <a class="option" href="./records_search.html" title="Records Search">
+                            <i class="fa-solid fa-magnifying-glass">
+                            </i>
+                        </a>
+                        <a class="option" href="./reports_page.html" title="Reports">
+                            <i class="fa-solid fa-chart-line">
+                            </i>
+                        </a>
+                    </div>
+                </div>
+                <!-- Info Alert -->
+                <div class="alert alert-info d-flex align-items-center gap-2" role="alert">
+                    <i class="fa-solid fa-signal">
+                    </i>
+                    <div>
+                        Connected to live data stream. Viewing:
+                        <strong id="lotContext">
+                            Lot A
+                        </strong>
+                        .
+                    </div>
+                    <button class="btn btn-sm btn-light ms-auto" id="reconnectBtn" type="button">
+                        <i class="fa-solid fa-rotate">
+                        </i>
+                        Reconnect
+                    </button>
+                </div>
+                <!-- Dashboard Summary Cards -->
+                <section class="mb-3" id="dashboardSummary">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="metric-card h-100">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="metric-title">
+                                        Total Occupancy
+                                    </div>
+                                    <i class="fa-solid fa-car text-info">
+                                    </i>
+                                </div>
+                                <div class="metric-value" id="kpiOccupancy">
+                                    <span class="skeleton">
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 small text-muted">
+                                    <i class="fa-solid fa-arrow-trend-up text-success">
+                                    </i>
+                                    <span id="kpiOccDelta">
+                                        +2.1% vs last hour
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="metric-card h-100">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="metric-title">
+                                        Available Spots
+                                    </div>
+                                    <i class="fa-solid fa-square-parking text-success">
+                                    </i>
+                                </div>
+                                <div class="metric-value" id="kpiAvailable">
+                                    <span class="skeleton">
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    <span id="kpiAvailablePct">
+                                        34% free
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="metric-card h-100">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="metric-title">
+                                        Today's Revenue
+                                    </div>
+                                    <i class="fa-solid fa-sack-dollar text-warning">
+                                    </i>
+                                </div>
+                                <div class="metric-value" id="kpiRevenue">
+                                    <span class="skeleton">
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    Updated
+                                    <span id="kpiRevenueUpdated">
+                                        —
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="metric-card h-100">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="metric-title">
+                                        Active Lots
+                                    </div>
+                                    <i class="fa-solid fa-warehouse text-primary">
+                                    </i>
+                                </div>
+                                <div class="metric-value" id="kpiLots">
+                                    <span class="skeleton">
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    Monitoring in real-time
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- Main Content Area -->
+                <section class="row g-3" id="mainContentArea">
+                    <!-- Left: Interactive Parking Map -->
+                    <div class="col-12 col-lg-5">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-map-location-dot text-primary">
+                                    </i>
+                                    <span class="widget-title">
+                                        Interactive Parking Map
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <label class="form-label mb-0 me-2">
+                                        Lot
+                                    </label>
+                                    <select aria-label="Select Parking Lot" class="form-select form-select-sm"
+                                        id="lotSelector" style="min-width: 160px;">
+                                        <option selected="" value="A">
+                                            Lot A
+                                        </option>
+                                        <option value="B">
+                                            Lot B
+                                        </option>
+                                        <option value="C">
+                                            Lot C
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="small text-muted mb-2">
+                                    Click on a spot to view vehicle details. Green = Available, Red = Occupied.
+                                </div>
+                                <div aria-live="polite" class="parking-map-grid" id="parkingMap">
+                                </div><img alt="placeholder" class="mb-2 rounded im" src="lot.gif">
+                            </div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3 small">
+                                    <span>
+                                        <span class="legend-dot bg-success">
+                                        </span>
+                                        Available
+                                    </span>
+                                    <span>
+                                        <span class="legend-dot bg-danger">
+                                        </span>
+                                        Occupied
+                                    </span>
+                                </div>
+                                <div class="small text-muted" id="mapSummary">
+                                    —
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right: Vehicles List + Live Activity -->
+                    <div class="col-12 col-lg-7 d-flex flex-column gap-3">
+                        <!-- Parked Vehicles List -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-list-check text-secondary">
+                                    </i>
+                                    <span class="widget-title">
+                                        Parked Vehicles
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <input class="form-control form-control-sm" id="filterSearch"
+                                        placeholder="Search (plate, ticket)…" style="min-width:160px;" type="text" />
+                                    <select class="form-select form-select-sm" id="filterLot">
+                                        <option value="">
+                                            All Lots
+                                        </option>
+                                        <option value="A">
+                                            Lot A
+                                        </option>
+                                        <option value="B">
+                                            Lot B
+                                        </option>
+                                        <option value="C">
+                                            Lot C
+                                        </option>
+                                    </select>
+                                    <select class="form-select form-select-sm" id="filterType">
+                                        <option value="">
+                                            All Types
+                                        </option>
+                                        <option value="Motorcycle">
+                                            Motorcycle
+                                        </option>
+                                        <option value="Compact">
+                                            Compact
+                                        </option>
+                                        <option value="Large">
+                                            Large
+                                        </option>
+                                        
+                                    </select>
+                                    <button class="btn btn-sm btn-light" id="clearFilters">
+                                        <i class="fa-solid fa-filter-circle-xmark">
+                                        </i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-theme mb-0" id="vehiclesTable">
+                                        <thead>
+                                            <tr>
+                                                <th data-sort="ticket" role="button">
+                                                    Ticket
+                                                    <i class="fa-solid fa-sort ms-1">
+                                                    </i>
+                                                </th>
+                                                <th data-sort="plate" role="button">
+                                                    Plate
+                                                    <i class="fa-solid fa-sort ms-1">
+                                                    </i>
+                                                </th>
+                                                <th data-sort="type" role="button">
+                                                    Type
+                                                    <i class="fa-solid fa-sort ms-1">
+                                                    </i>
+                                                </th>
+                                                <th data-sort="spot" role="button">
+                                                    Spot
+                                                    <i class="fa-solid fa-sort ms-1">
+                                                    </i>
+                                                </th>
+                                                <th data-sort="lot" role="button">
+                                                    Lot
+                                                    <i class="fa-solid fa-sort ms-1">
+                                                    </i>
+                                                </th>
+                                                <th data-sort="entry" role="button">
+                                                    Entry Time
+                                                    <i class="fa-solid fa-sort ms-1">
+                                                    </i>
+                                                </th>
+                                                <th>
+                                                    Duration
+                                                </th>
+                                                <th>
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="vehiclesTbody">
+                                            <!-- Filled by JS with mock data -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex align-items-center justify-content-between">
+                                <div class="small text-muted" id="paginationInfo">
+                                    Showing 0–0 of 0
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button class="btn btn-light" id="prevPage">
+                                        <i class="fa-solid fa-chevron-left">
+                                        </i>
+                                    </button>
+                                    <button class="btn btn-light" id="nextPage">
+                                        <i class="fa-solid fa-chevron-right">
+                                        </i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Live Activity Feed -->
+                        <div class="card flex-grow-1" style="min-height:280px;">
+                            <div class="card-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-bolt text-warning">
+                                    </i>
+                                    <span class="widget-title">
+                                        Live Activity
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    Recent entries and exits
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul aria-live="polite" class="list-group list-group-flush" id="activityFeed">
+                                    <!-- Items appended via JS -->
+                                </ul>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center small">
+                                <span class="text-muted">
+                                    Auto-updating
+                                </span>
+                                <a class="text-decoration-none" href="./records_search.html">
+                                    <i class="fa-solid fa-magnifying-glass me-1">
+                                    </i>
+                                    Records Search
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            <!-- Footer (Common Component) -->
+            <style>
+                .manager-footer {
+                    background: #0f1230;
+                    color: #cfd3d7;
+                    position: sticky;
+                    bottom: 0;
+                    z-index: 1020;
+                }
+
+                .manager-footer a {
+                    color: #cfd3d7;
+                    text-decoration: none;
+                }
+
+                .manager-footer a:hover {
+                    color: #ffffff;
+                    text-decoration: underline;
+                }
+            </style>
+            <footer class="manager-footer mt-auto py-2 px-3">
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+                    <div class="d-flex align-items-center gap-3 small">
+                        <a href="./admin_dashboard.html">
+                            <i class="fa-solid fa-gauge-high me-1">
+                            </i>
+                            KPIs
+                        </a>
+                        <a href="./reports_page.html">
+                            <i class="fa-solid fa-chart-line me-1">
+                            </i>
+                            Reports
+                        </a>
+                        <a href="#export" id="exportFooter">
+                            <i class="fa-solid fa-file-pdf me-1">
+                            </i>
+                            Export
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 small">
+                        <a href="#terms">
+                            Terms
+                        </a>
+                        <a href="#privacy">
+                            Privacy
+                        </a>
+                        <span class="text-muted">
+                            © 2025 Parking System
+                        </span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    <!-- Bootstrap Toasts Container (system feedback) -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div aria-atomic="true" aria-live="assertive" class="toast align-items-center text-bg-dark border-0"
+            id="liveToast" role="status">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fa-solid fa-plug-circle-check me-2 text-success">
+                    </i>
+                    Connected to realtime service
+                </div>
+                <button aria-label="Close" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    type="button">
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Scripts: Bootstrap, Page Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script>
+        // PASTE THIS ENTIRE BLOCK INTO YOUR SCRIPT TAG
+
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+let allTickets = [];
+        /**
+         * Helper function to make authenticated API calls.
+         */
+        async function fetchWithAuth(endpoint, options = {}) {
+            const token = localStorage.getItem('accessToken');
+            const headers = { 'Content-Type': 'application/json', ...options.headers };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+            if (!response.ok) {
+                if (response.status === 401) window.location.href = './index.html';
+                const error = await response.json();
+                throw new Error(error.detail || `API request failed: ${response.status}`);
+            }
+            return response.json();
+        }
+
+        // --- STATE MANAGEMENT ---
+        let tableState = {
+            currentPage: 1,
+            pageSize: 8,
+            sortCol: 'entry_time', // Corresponds to API sort key
+            sortDir: 'desc',
+            filterLot: '',
+            filterType: '',
+            search: ''
+        };
+        let selectedLotId = 1; // Default to Lot 1 (Lot A)
+        let activityFeedInterval;
+
+        // --- UI HELPER FUNCTIONS ---
+        const fmtTime = (iso) => iso ? new Date(iso).toLocaleString() : '—';
+        const durationFrom = (iso) => {
+            if (!iso) return '—';
+            const now = new Date();
+            const then = new Date(iso);
+            const ms = Math.max(0, now - then);
+            const mins = Math.floor(ms / 60000);
+            const hrs = Math.floor(mins / 60);
+            const rem = mins % 60;
+            return hrs > 0 ? `${hrs}h ${rem}m` : `${rem}m`;
+        };
+        const showToast = (message, iconClass = 'fa-plug-circle-check') => {
+            // Implement your toast logic here if needed
+            console.log(`Toast: ${message}`);
+        };
+        const initTooltips = () => {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+        };
+
+        // --- API-DRIVEN RENDER FUNCTIONS ---
+        async function updateKPIs() {
+            try {
+                const data = await fetchWithAuth('/admin/dashboard/summary');
+                const total = data.total_spots || 0;
+                const occupied = data.occupied_spots || 0;
+                const available = data.available_spots || 0;
+
+                document.getElementById('kpiOccupancy').textContent = `${occupied}/${total}`;
+                document.getElementById('kpiAvailable').textContent = String(available);
+                if (total > 0) {
+                    document.getElementById('kpiAvailablePct').textContent = `${Math.round((available / total) * 100)}% free`;
+                }
+                document.getElementById('kpiLots').textContent = String(Object.keys(data.breakdown_by_lot).length);
+                document.getElementById('kpiRevenue').textContent = `...`; // Revenue requires a separate report call
+                document.getElementById('kpiRevenueUpdated').textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error("Error updating KPIs:", error);
+            }
+        }
+
+        async function renderMap() {
+            const mapEl = document.getElementById('parkingMap');
+            mapEl.innerHTML = `<div class="spinner-border text-info m-auto" role="status"></div>`;
+
+            try {
+                const data = await fetchWithAuth(`/admin/parking-lots/${selectedLotId}/map`);
+
+                mapEl.innerHTML = data.spots_array.map(s => {
+                    const colorClass = s.status === 'occupied' ? 'bg-danger' : 'bg-success';
+                    const title = s.status === 'occupied' ? `${s.spot_number} • Occupied` : `${s.spot_number} • Available`;
+                    const cls = s.status === 'occupied' ? 'occupied' : 'available';
+                    return `<button class="spot ${colorClass}" data-id="${s.spot_number}" data-status="${s.status}" data-bs-toggle="tooltip" data-bs-title="${title}"></button>`;
+                }).join('');
+
+                initTooltips();
+                document.getElementById('lotContext').textContent = data.lot_name;
+                const occupied = data.spots_array.filter(s => s.status === 'occupied').length;
+                document.getElementById('mapSummary').textContent = `${occupied} occupied • ${data.spots_array.length - occupied} available`;
+            } catch (error) {
+                console.error("Error rendering map:", error);
+                mapEl.innerHTML = '<div class="text-danger m-auto">Failed to load parking map.</div>';
+            }
+        }
+
+        async function renderTable() {
+            const tbody = document.getElementById('vehiclesTbody');
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center">Loading...</td></tr>`;
+
+            const params = new URLSearchParams({
+                status: 'active',
+                sort_by: `${tableState.sortCol}_${tableState.sortDir}`
+            });
+            if (tableState.search) params.set('vehicle_number', tableState.search);
+
+            try {
+                const tickets= await fetchWithAuth(`/admin/tickets?${params.toString()}`);
+allTickets = tickets;
+                // Client-side filtering for Lot and Type
+                let filteredData = tickets;
+                if (tableState.filterLot) filteredData = filteredData.filter(t => t.lot_name.includes(tableState.filterLot));
+                if (tableState.filterType) filteredData = filteredData.filter(t => t.vehicle_type === tableState.filterType); // Assuming vehicle_type is available
+
+                const start = (tableState.currentPage - 1) * tableState.pageSize;
+                const rows = filteredData.slice(start, start + tableState.pageSize);
+
+                if (rows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center">No active vehicles found.</td></tr>`;
+                } else {
+                    tbody.innerHTML = rows.map(v => {
+                        const badge = v.vehicle_type === 'Large' ? 'success' : (v.vehicle_type === 'Motorcycle' ? 'secondary' : 'primary');
+                        return `<tr data-plate="${v.vehicle_number}">
+                    <td>${v.ticket_id}</td>
+                    <td>${v.vehicle_number}</td>
+                    <td><span class="badge text-bg-${badge}">${v.vehicle_type || 'N/A'}</span></td>
+                    <td>${v.spot_number}</td>
+                    <td>${v.lot_name}</td>
+                    <td>${fmtTime(v.entry_time)}</td>
+                    <td>${durationFrom(v.entry_time)}</td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        <button class="btn btn-sm btn-light view-details-btn" data-ticket-id="${v.ticket_id}" title="View Ticket Details"><i class="fa-solid fa-up-right-from-square"></i></button>                      </div>
+                    </td>
+                </tr>`;
+                    }).join('');
+                }
+
+                // Update pagination
+                const info = document.getElementById('paginationInfo');
+                const total = filteredData.length;
+                const from = Math.min(total, start + 1);
+                const to = Math.min(total, start + rows.length);
+                info.textContent = `Showing ${from}–${to} of ${total}`;
+                document.getElementById('prevPage').disabled = tableState.currentPage === 1;
+                const totalPages = Math.max(1, Math.ceil(total / tableState.pageSize));
+                document.getElementById('nextPage').disabled = tableState.currentPage >= totalPages;
+
+            } catch (error) {
+                console.error("Error rendering table:", error);
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Failed to load vehicle data.</td></tr>`;
+            }
+        }
+
+        async function fetchLiveActivity() {
+            try {
+                // Fetch the 5 most recent tickets (any status)
+                const tickets = await fetchWithAuth('/admin/tickets?sort_by=entry_time_desc');
+                const feedEl = document.getElementById('activityFeed');
+                feedEl.innerHTML = ''; // Clear previous feed
+
+                tickets.slice(0, 5).forEach(t => {
+                    const isEntry = t.status === 'active';
+                    const icon = isEntry ? 'fa-right-to-bracket text-success' : 'fa-right-from-bracket text-danger';
+                    const time = new Date(t.exit_time || t.entry_time).toLocaleTimeString();
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item d-flex align-items-center gap-2';
+                    li.innerHTML = `<i class="fa-solid ${icon}"></i>
+                <div class="flex-grow-1">
+                  <div><strong>${t.vehicle_number}</strong> ${isEntry ? 'entered' : 'exited'} • ${t.lot_name} • ${t.spot_number}</div>
+                  <div class="small text-muted">${time}</div>
+                </div>`;
+                    feedEl.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching live activity:", error);
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('lotSelector').addEventListener('change', (e) => {
+            // This maps your dropdown value ('A', 'B') to the API's lot_id (1, 2). Adjust if needed.
+            const lotIdMap = { 'A': 1, 'B': 2, 'C': 3 };
+            selectedLotId = lotIdMap[e.target.value] || 1;
+            renderMap();
+        });
+
+        document.getElementById('filterLot').addEventListener('change', (e) => {
+            tableState.filterLot = e.target.value;
+            tableState.currentPage = 1;
+            renderTable(); // Re-render with client-side filter
+        });
+
+        document.getElementById('filterType').addEventListener('change', (e) => {
+            tableState.filterType = e.target.value;
+            tableState.currentPage = 1;
+            renderTable(); // Re-render with client-side filter
+        });
+
+        document.getElementById('filterSearch').addEventListener('input', (e) => {
+            tableState.search = e.target.value.trim();
+            tableState.currentPage = 1;
+            renderTable(); // Re-render, will trigger new API call
+        });
+
+        // Add other event listeners for pagination, sorting etc.
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#prevPage')) {
+                tableState.currentPage = Math.max(1, tableState.currentPage - 1);
+                renderTable();
+            }
+            if (e.target.closest('#nextPage')) {
+                tableState.currentPage++;
+                renderTable();
+            }
+            // ADD this event listener with your other listeners
+
+            document.getElementById('lotSelector').addEventListener('change', (e) => {
+                // This maps your dropdown value ('A', 'B') to the API's lot_id (1, 2). Adjust if needed.
+                const lotIdMap = {
+                    'A': 1,
+                    'B': 2,
+                    'C': 3
+                };
+                selectedLotId = lotIdMap[e.target.value] || 1; // Update the selected lot ID
+                renderMap(); // Refresh the map with the new lot
+            });
+        });
+// This helper function creates a status badge, similar to the one on your records page.
+function getStatusBadge(status) {
+    const statusMap = {
+        'ACTIVE': 'warning',
+        'CLOSED': 'success',
+        'EXPIRED': 'danger' // Assuming you might have this status
+    };
+    const badgeClass = statusMap[status.toUpperCase()] || 'secondary';
+    return `<span class="badge text-bg-${badgeClass}">${status}</span>`;
+}
+
+// This function will handle the assisted exit API call
+async function handleAssistedExit(tickets) {
+    const {
+        value: paymentMethod
+    } = await Swal.fire({
+        title: 'Confirm Assisted Exit',
+        html: `Process a lost ticket or manual exit for <strong>${tickets.vehicle_number}</strong>? A penalty may be applied.`,
+        icon: 'warning',
+        input: 'select',
+        inputOptions: {
+            'Cash': 'Cash',
+            'Card': 'Card',
+            'UPI': 'UPI'
+        },
+        inputPlaceholder: 'Select payment method',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, process exit',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'You need to choose a payment method!'
+            }
+        }
+    });
+
+    if (paymentMethod) {
+        Swal.fire({
+            title: 'Processing...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            // This is where you call your backend API
+            const exitResult = await fetchWithAuth('/admin/exit/assisted', {
+                method: 'POST',
+                body: JSON.stringify({
+                    vehicle_number: tickets.vehicle_number,
+                    exit_reason: "ASSISTED_BY_ADMIN",
+                    payment_method: paymentMethod,
+                    amount_paid: 50.00, // Example penalty amount
+                    processed_by_user_id: 1 // Placeholder for the logged-in user's ID
+                })
+            });
+
+            Swal.fire('Success!', exitResult.message, 'success');
+            renderTable(); // Refresh the table to show the updated status
+
+        } catch (error) {
+            Swal.fire('Action Failed', error.message, 'error');
+        }
+    }
+}
+
+
+// Add this to your main event listener block
+document.addEventListener('click', (e) => {
+    const viewBtn = e.target.closest('.view-details-btn');
+    if (viewBtn) {
+        const ticketId = viewBtn.dataset.ticketId;
+        // Find the ticket data from your state (assuming the array is named 'tickets')
+        const ticket = allTickets.find(t => t.ticket_id == ticketId);
+
+        if (!ticket) {
+            console.error('Ticket data not found for ID:', ticketId);
+            return;
+        }
+
+        // Determine if the "Assist Exit" button should be shown
+        const isTicketActive = ticket.status.toUpperCase() === 'ACTIVE';
+
+        Swal.fire({
+            title: `Ticket Details`,
+            html: `
+                <div class="text-start p-2">
+                    <p class="mb-2"><strong>Ticket ID:</strong> #${ticket.ticket_id}</p>
+                    <p class="mb-2"><strong>Vehicle Plate:</strong> ${ticket.vehicle_number}</p>
+                    <p class="mb-2"><strong>Spot:</strong> ${ticket.spot_number} (${ticket.lot_name})</p>
+                    <p class="mb-2"><strong>Entry Time:</strong> ${new Date(ticket.entry_time).toLocaleString()}</p>
+                    <hr>
+                    <p class="mb-0"><strong>Status:</strong> ${getStatusBadge(ticket.status)}</p>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-life-ring me-2"></i> Assist Exit',
+            cancelButtonText: 'Close',
+            confirmButtonColor: '#dc3545',
+            // Only show the confirm button if the ticket is active
+            showConfirmButton: isTicketActive, 
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // If the "Assist Exit" button was clicked
+                handleAssistedExit(ticket);
+            }
+        });
+    }
+    
+    // ... keep your other event listeners like #prevPage and #nextPage here ...
+});
+
+        // --- INITIAL PAGE LOAD ---
+        window.addEventListener('DOMContentLoaded', () => {
+            updateKPIs();
+            renderMap();
+            renderTable();
+            fetchLiveActivity();
+
+            // Refresh data periodically
+            setInterval(() => {
+                updateKPIs();
+                renderMap();
+                renderTable();
+                fetchLiveActivity();
+            }, 30000); // Refresh every 30 seconds
+        });
+        // Wait for the page to fully load
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Find the logout button by the ID we just added
+    const logoutButton = document.getElementById('logoutButton');
+
+    // Check if the logout button exists on this page
+    if (logoutButton) {
+        
+        // Add an event listener to run code when it's clicked
+        logoutButton.addEventListener('click', function(event) {
+            
+            // Prevent the link's default behavior (which is to go to "#")
+            event.preventDefault();
+
+            console.log('Logout button clicked. Clearing session...');
+
+            // 1. Remove the access token from Local Storage
+            localStorage.removeItem('accessToken');
+
+            // 2. (Optional but recommended) Alert the user
+            alert('You have been successfully logged out.');
+
+            // 3. Redirect to the login page
+            window.location.href = './index.html';
+        });
+    }
+});
+
+    </script>
+    
+</body>
+
+</html>
