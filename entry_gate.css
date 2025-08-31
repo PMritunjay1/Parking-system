@@ -54,6 +54,12 @@ body {
     grid-template-columns: repeat(8, 1fr)
 }
 
+.gate-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
 @media (min-width: 576px) {
     .keyboard-grid {
         grid-template-columns: repeat(10, 1fr)
@@ -95,15 +101,18 @@ body {
     padding-top: 0.9rem;
     padding-bottom: 0.9rem
 }
-.row{
+
+.row {
     padding-top: 3%;
 }
+
 /* Ensure sidebar + content play nicely on all widths */
 @media (max-width: 991.98px) {
     #sidebarGate {
         display: none !important
     }
-    .gate-footer{
+
+    .gate-footer {
         position: relative !important;
     }
 }
@@ -174,6 +183,7 @@ body {
         /* Align wrapped items to the right */
         gap: 0.5rem !important;
         /* Reduce gap on small screens */
+
     }
 
     /* Hide the text on the "Call Attendant" button, showing only the icon */
