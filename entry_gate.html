@@ -87,6 +87,7 @@
             color: #ffffff;
             text-decoration: underline;
         }
+
         @media (max-width: 875px) {
             .gate-footer {
                 position: relative !important;
@@ -97,29 +98,10 @@
 
 <body>
     <div class="d-flex">
-        <aside class="d-flex flex-column vh-100 p-3" id="sidebarGate">
-            <div class="brand-area d-flex align-items-center gap-2 mb-3">
-                <img alt="Logo"
-                    src="https://dsaishared.blob.core.windows.net/uxcceleratecontainer/projects/68aefca48ecfc2752de0a4e6/logos/logo_8a6ad475-2595-482f-9695-3ec60565bb2a.png"
-                    style="height:36px;" />
-                <span class="fw-semibold">Parking Kiosk</span>
-            </div>
-            <nav class="nav flex-column mt-2">
-                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">
-    <i class="fa-solid fa-circle-question me-2"></i> Help
-</a>                <a class="nav-link" href="#" id="langLink"><i class="fa-solid fa-language me-2"></i> Language</a>
-                <a class="nav-link" href="#" id="safetyLink"><i class="fa-solid fa-shield-heart me-2"></i> Safety
-                    Tips</a>
-            </nav>
-            <div class="mt-auto small text-muted">For assistance, press the 'Need Help' button on screen.</div>
-        </aside>
-
         <div class="flex-grow-1 d-flex flex-column min-vh-100">
             <nav class="navbar navbar-expand-lg navbar-dark gate-navbar px-3">
                 <a class="navbar-brand d-flex align-items-center gap-2" href="./entry_gate.html">
-                    <img alt="Logo"
-                        src="logo.png"                        
-                        style="height:28px;" />
+                    <img alt="Logo" src="logo.png" style="height:28px;" />
                     <span> Parking System</span>
                 </a>
                 <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
@@ -153,197 +135,264 @@
                     </div>
                 </div>
             </nav>
-            
-            <main class="container-fluid py-3 py-md-4 flex-grow-1">
-                <div class="bg-muted border-bottom">
+            <div class="flex-grow-1 d-flex">
+                <!-- Common Gate Terminal Sidebar (Entry & Exit Kiosks) -->
+                <style>
+                    :root {
+                        --primary: #03011d;
+                        --secondary: #194542;
+                    }
 
-                <nav aria-label="breadcrumb" class="container-max pill-nav mb-0 d-none d-md-flex">
-                    <span class="breadcrumb-item">
-                        <a href="./entry_gate.html" class="active">Entry Gate</a>
-                    </span>
-                    <span class="breadcrumb-item">
-                        <a href="./exit_gate.html">Exit Gate</a>
-                    </span>
-                    <span class="breadcrumb-item">
-                        <a href="./index.html">Login</a>
-                    </span>
-                    <span class="breadcrumb-item">
-                        <a href="./admin_dashboard.html">Admin</a>
-                    </span>
-                    <span class="breadcrumb-item">
-                        <a href="./records_search.html">Records</a>
-                    </span>
-                    <span class="breadcrumb-item">
-                        <a href="./reports_page.html">Reports</a>
-                    </span>
-                </nav>
+                    #sidebarGate {
+                        width: 260px;
+                        background: var(--primary);
+                        color: #eaeaea;
+                    }
 
-                <div class="dropdown d-md-none p-2">
-                    <button class="btn btn-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        <i class="fa-solid fa-bars me-2"></i> Quick Navigation
-                    </button>
-                    <ul class="dropdown-menu w-100">
-                        <li><a class="dropdown-item" href="./entry_gate.html">Entry Gate</a></li>
-                        <li><a class="dropdown-item" href="./exit_gate.html">Exit Gate</a></li>
-                        <li><a class="dropdown-item" href="./index.html">Login</a></li>
-                        <li><a class="dropdown-item" href="./admin_dashboard.html">Admin</a></li>
-                        <li><a class="dropdown-item" href="./records_search.html">Records</a></li>
-                        <li><a class="dropdown-item" href="./reports_page.html">Reports</a></li>
-                    </ul>
-                </div>
+                    #sidebarGate .brand-area {
+                        border-bottom: 1px solid rgba(255, 255, 255, .08);
+                    }
 
-            </div>
-                <div class="row justify-content-center">
-                    <div class="col-12 col-lg-10 col-xl-8">
-                        <section class="app-card kiosk-card" id="entryFlowManager">
-                            <div class="card-header">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="fa-solid fa-right-to-bracket text-primary"></i>
-                                    <span class="widget-title">Vehicle Entry</span>
-                                </div>
-                                <div class="text-muted small" id="stepIndicator">Welcome</div>
-                            </div>
-                            <div class="card-body">
-                                <div class="flow-step" data-step="welcome">
-                                    <div class="text-center mb-4">
-                                        <h1 class="fw-bold mb-2">Welcome </h1>
-                                        <p class="text-muted">Touch the button below to begin</p>
-                                    </div>
-                                    <div class="row g-3 align-items-stretch mb-4">
-                                        <div class="col-12 col-md-6">
-                                            <div class="p-3 rounded border h-100 bg-info-soft">
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fa-solid fa-receipt text-info me-2"></i>
-                                                    <strong>Parking Fees</strong>
-                                                </div>
-                                                <div class="small text-dark" id="feeDisplay"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <div class="p-3 rounded border h-100 bg-success-soft">
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fa-solid fa-shield-halved text-success me-2"></i>
-                                                    <strong>Notes</strong>
-                                                </div>
-                                                <ul class="small mb-0 ps-3">
-                                                    <li>Keep your vehicle number ready</li>
-                                                    <li>Digital ticket will be issued</li>
-                                                    <li>No cash required at entry</li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="d-grid">
-                                        <button type="button" class="btn btn-primary btn-lg py-3" id="startButton">
-                                            <i class="fa-solid fa-hand-pointer me-2"></i> Tap to Enter
-                                        </button>
-                                    </div>
-                                </div>
+                    #sidebarGate .nav .nav-link {
+                        color: #cfd3d7;
+                        border-radius: .35rem;
+                    }
 
-                                <div class="flow-step" data-step="selectType">
-                                    <div class="text-center mb-3">
-                                        <h2 class="fw-semibold mb-1">Please select your vehicle type</h2>
-                                        <p class="text-muted">Tap to choose one</p>
-                                    </div>
-                                    <div class="row g-3" id="vehicleTypeGrid"></div>
-                                    <div class="mt-3">
-                                        <button type="button" class="btn btn-light" id="backToWelcome">
-                                            <i class="fa-solid fa-arrow-left me-2"></i> Back
-                                        </button>
-                                    </div>
-                                </div>
+                    #sidebarGate .nav .nav-link:hover {
+                        background: rgba(25, 69, 66, .25);
+                        color: #fff;
+                    }
 
-                                <div class="flow-step" data-step="enterNumber">
-                                    <div class="text-center mb-3">
-                                        <h2 class="fw-semibold mb-1">Enter your vehicle number</h2>
-                                        <p class="text-muted">Use the on-screen keyboard below</p>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Vehicle Number</label>
-                                        <div aria-live="polite"
-                                            class="number-display-field form-control form-control-lg"
-                                            id="numberDisplay"></div>
-                                        <div class="form-text">Example: KA01AB1234</div>
-                                    </div>
-                                    <div aria-label="On-screen keyboard" class="keyboard-grid" id="keyboardGrid"></div>
-                                    <div class="d-flex gap-2 mt-3">
-                                        <button type="button" class="btn btn-light" id="backToType">
-                                            <i class="fa-solid fa-arrow-left me-2"></i> Back
-                                        </button>
-                                        <button type="button" class="btn btn-success ms-auto" id="confirmNumber">
-                                            <i class="fa-solid fa-check me-2"></i> Confirm
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="flow-step" data-step="processing">
-                                    <div class="processing-view text-center py-5">
-                                        <div aria-hidden="true" class="spinner-border text-primary mb-3" role="status">
-                                        </div>
-                                        <h3 class="mb-1">Processing your entry...</h3>
-                                        <p class="text-muted">Please wait while we issue your ticket</p>
-                                    </div>
-                                </div>
-
-                                <div class="flow-step" data-step="displayTicket">
-                                    <div class="text-center mb-3">
-                                        <h2 class="fw-semibold">Your Digital Ticket</h2>
-                                        <p class="text-muted">Show this at the exit or scan if prompted</p>
-                                    </div>
-                                    <div class="row g-3 align-items-stretch">
-                                        <div class="col-12 col-md-6">
-                                            <div
-                                                class="qr-panel p-3 rounded border h-100 d-flex align-items-center justify-content-center">
-                                                <div aria-label="QR Code" class="qr-code" id="qrcode"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <div class="p-3 rounded border h-100">
-                                                <ul class="list-unstyled mb-0" id="ticketDetails"></ul>
-                                                <div class="alert alert-success mt-3 mb-0">
-                                                    <i class="fa-solid fa-door-open me-2"></i> Barrier opening... Please
-                                                    proceed.
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <p class="text-muted small">This screen will reset in 1 minute.</p>
-                                        <button type="button" class="btn btn-secondary mt-2" id="newEntryButton">
-                                            <i class="fa-solid fa-rotate-right me-2"></i> Start New Entry
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="flow-step" data-step="status">
-                                    <div class="status-screen text-center py-5">
-                                        <div class="display-5 mb-3" id="statusIcon"></div>
-                                        <h3 class="mb-2" id="statusMessage"></h3>
-                                        <p class="text-muted">Returning to welcome screen shortly...</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card-footer d-flex align-items-center justify-content-between">
-                                <div class="small text-muted"><i class="fa-solid fa-circle-info me-1"></i>
-                                    Touch-friendly interface</div>
-                                <div class="small"><span class="badge-soft info"><i
-                                            class="fa-solid fa-car-side me-1"></i><span id="selectedTypeBadge">No type
-                                            selected</span></span></div>
-                            </div>
-                        </section>
+                    #sidebarGate .nav .nav-link.active {
+                        background: var(--secondary);
+                        color: #fff;
+                    }
+                </style>
+                <aside class="d-none d-md-flex flex-column vh-100 p-3" id="sidebarGate">
+                    <div class="brand-area d-flex align-items-center gap-2 mb-3">
+                        <img alt="Logo" onerror="this.onerror=null;this.src='https://picsum.photos/seed/logo/72/72'"
+                            src="https://dsaishared.blob.core.windows.net/uxcceleratecontainer/projects/68aefca48ecfc2752de0a4e6/logos/logo_8a6ad475-2595-482f-9695-3ec60565bb2a.png"
+                            style="height:36px;" />
+                        <span class="fw-semibold">
+                            Parking Kiosk
+                        </span>
                     </div>
-                </div>
-            </main>
+                    <nav class="nav flex-column mt-2">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">
+                            <i class="fa-solid fa-circle-question me-2"></i> Help
+                        </a>
+                        <a class="nav-link" href="#lang">
+                            <i class="fa-solid fa-language me-2">
+                            </i>
+                            Language
+                        </a>
+                        <a class="nav-link" href="#safety">
+                            <i class="fa-solid fa-shield-heart me-2">
+                            </i>
+                            Safety Tips
+                        </a>
+                    </nav>
+                    <div class="mt-auto small text-muted">
+                        For assistance, press the 'Need Help' button on screen.
+                    </div>
+                    <!-- Icons used: fa-circle-question, fa-language, fa-shield-heart -->
+                </aside>
+                <main class="container-fluid py-3 py-md-4 flex-grow-1">
+                    <div class="bg-muted border-bottom">
+
+                        <nav aria-label="breadcrumb" class="container-max pill-nav mb-0 d-none d-md-flex">
+                            <span class="breadcrumb-item">
+                                <a href="./entry_gate.html" class="active">Entry Gate</a>
+                            </span>
+                            <span class="breadcrumb-item">
+                                <a href="./exit_gate.html">Exit Gate</a>
+                            </span>
+                            <span class="breadcrumb-item">
+                                <a href="./index.html">Login</a>
+                            </span>
+                            <span class="breadcrumb-item">
+                                <a href="./admin_dashboard.html">Admin</a>
+                            </span>
+                            <span class="breadcrumb-item">
+                                <a href="./records_search.html">Records</a>
+                            </span>
+                            <span class="breadcrumb-item">
+                                <a href="./reports_page.html">Reports</a>
+                            </span>
+                        </nav>
+
+                        <div class="dropdown d-md-none p-2">
+                            <button class="btn btn-secondary dropdown-toggle w-100" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-bars me-2"></i> Quick Navigation
+                            </button>
+                            <ul class="dropdown-menu w-100">
+                                <li><a class="dropdown-item" href="./entry_gate.html">Entry Gate</a></li>
+                                <li><a class="dropdown-item" href="./exit_gate.html">Exit Gate</a></li>
+                                <li><a class="dropdown-item" href="./index.html">Login</a></li>
+                                <li><a class="dropdown-item" href="./admin_dashboard.html">Admin</a></li>
+                                <li><a class="dropdown-item" href="./records_search.html">Records</a></li>
+                                <li><a class="dropdown-item" href="./reports_page.html">Reports</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-10 col-xl-8">
+                            <section class="app-card kiosk-card" id="entryFlowManager">
+                                <div class="card-header">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fa-solid fa-right-to-bracket text-primary"></i>
+                                        <span class="widget-title">Vehicle Entry</span>
+                                    </div>
+                                    <div class="text-muted small" id="stepIndicator">Welcome</div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="flow-step" data-step="welcome">
+                                        <div class="text-center mb-4">
+                                            <h1 class="fw-bold mb-2">Welcome </h1>
+                                            <p class="text-muted">Touch the button below to begin</p>
+                                        </div>
+                                        <div class="row g-3 align-items-stretch mb-4">
+                                            <div class="col-12 col-md-6">
+                                                <div class="p-3 rounded border h-100 bg-info-soft">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fa-solid fa-receipt text-info me-2"></i>
+                                                        <strong>Parking Fees</strong>
+                                                    </div>
+                                                    <div class="small text-dark" id="feeDisplay"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="p-3 rounded border h-100 bg-success-soft">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fa-solid fa-shield-halved text-success me-2"></i>
+                                                        <strong>Notes</strong>
+                                                    </div>
+                                                    <ul class="small mb-0 ps-3">
+                                                        <li>Keep your vehicle number ready</li>
+                                                        <li>Digital ticket will be issued</li>
+                                                        <li>No cash required at entry</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="button" class="btn btn-primary btn-lg py-3" id="startButton">
+                                                <i class="fa-solid fa-hand-pointer me-2"></i> Tap to Enter
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="flow-step" data-step="selectType">
+                                        <div class="text-center mb-3">
+                                            <h2 class="fw-semibold mb-1">Please select your vehicle type</h2>
+                                            <p class="text-muted">Tap to choose one</p>
+                                        </div>
+                                        <div class="row g-3" id="vehicleTypeGrid"></div>
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-light" id="backToWelcome">
+                                                <i class="fa-solid fa-arrow-left me-2"></i> Back
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="flow-step" data-step="enterNumber">
+                                        <div class="text-center mb-3">
+                                            <h2 class="fw-semibold mb-1">Enter your vehicle number</h2>
+                                            <p class="text-muted">Use the on-screen keyboard below</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Vehicle Number</label>
+                                            <div aria-live="polite"
+                                                class="number-display-field form-control form-control-lg"
+                                                id="numberDisplay"></div>
+                                            <div class="form-text">Example: KA01AB1234</div>
+                                        </div>
+                                        <div aria-label="On-screen keyboard" class="keyboard-grid" id="keyboardGrid">
+                                        </div>
+                                        <div class="d-flex gap-2 mt-3">
+                                            <button type="button" class="btn btn-light" id="backToType">
+                                                <i class="fa-solid fa-arrow-left me-2"></i> Back
+                                            </button>
+                                            <button type="button" class="btn btn-success ms-auto" id="confirmNumber">
+                                                <i class="fa-solid fa-check me-2"></i> Confirm
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="flow-step" data-step="processing">
+                                        <div class="processing-view text-center py-5">
+                                            <div aria-hidden="true" class="spinner-border text-primary mb-3"
+                                                role="status">
+                                            </div>
+                                            <h3 class="mb-1">Processing your entry...</h3>
+                                            <p class="text-muted">Please wait while we issue your ticket</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flow-step" data-step="displayTicket">
+                                        <div class="text-center mb-3">
+                                            <h2 class="fw-semibold">Your Digital Ticket</h2>
+                                            <p class="text-muted">Show this at the exit or scan if prompted</p>
+                                        </div>
+                                        <div class="row g-3 align-items-stretch">
+                                            <div class="col-12 col-md-6">
+                                                <div
+                                                    class="qr-panel p-3 rounded border h-100 d-flex align-items-center justify-content-center">
+                                                    <div aria-label="QR Code" class="qr-code" id="qrcode"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="p-3 rounded border h-100">
+                                                    <ul class="list-unstyled mb-0" id="ticketDetails"></ul>
+                                                    <div class="alert alert-success mt-3 mb-0">
+                                                        <i class="fa-solid fa-door-open me-2"></i> Barrier opening...
+                                                        Please
+                                                        proceed.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <p class="text-muted small">This screen will reset in 1 minute.</p>
+                                            <button type="button" class="btn btn-secondary mt-2" id="newEntryButton">
+                                                <i class="fa-solid fa-rotate-right me-2"></i> Start New Entry
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="flow-step" data-step="status">
+                                        <div class="status-screen text-center py-5">
+                                            <div class="display-5 mb-3" id="statusIcon"></div>
+                                            <h3 class="mb-2" id="statusMessage"></h3>
+                                            <p class="text-muted">Returning to welcome screen shortly...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <div class="small text-muted"><i class="fa-solid fa-circle-info me-1"></i>
+                                        Touch-friendly interface</div>
+                                    <div class="small"><span class="badge-soft info"><i
+                                                class="fa-solid fa-car-side me-1"></i><span id="selectedTypeBadge">No
+                                                type
+                                                selected</span></span></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </main>
+            </div>
 
             <footer class="gate-footer mt-auto py-2 px-3">
                 <div class="d-flex align-items-center justify-content-between gap-2">
                     <small>By proceeding, you agree to our <a href="#">Terms</a> and <a href="#">Privacy
                             Policy</a>.</small>
-                            <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#contactModal">
-    <i class="fa-solid fa-envelope me-1"></i> Contact Us
-</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal"
+                        data-bs-target="#contactModal">
+                        <i class="fa-solid fa-envelope me-1"></i> Contact Us
+                    </button>
                     <small>© 2025 Parking System</small>
                 </div>
             </footer>
@@ -533,7 +582,11 @@
 
         document.getElementById('startButton').addEventListener('click', () => setStep('selectType'));
         document.getElementById('backToWelcome').addEventListener('click', resetFlow);
-        document.getElementById('confirmNumber').addEventListener('click', handleConfirm);
+        // REPLACE your current 'confirmNumber' event listener with this
+        document.getElementById('confirmNumber').addEventListener('click', (e) => {
+            e.preventDefault(); // This line stops the browser's default reload action
+            handleConfirm();
+        });
         document.getElementById('backToType').addEventListener('click', () => setStep('selectType'));
         document.getElementById('newEntryButton').addEventListener('click', resetFlow);
 
@@ -583,63 +636,65 @@
             setInterval(updateTime, 10000);
         });
         // This script should be placed in a <script> tag on pages where the modal exists
-document.addEventListener('DOMContentLoaded', function() {
-    const sendMessageBtn = document.getElementById('sendMessageBtn');
-    if(sendMessageBtn) {
-        sendMessageBtn.addEventListener('click', function() {
-            // In a real app, you would gather form data and send it to your server here.
-            // Example: const name = document.getElementById('contactName').value;
-            
-            // For now, we'll just show a success message.
-            Swal.fire({
-                icon: 'success',
-                title: 'Message Sent!',
-                text: 'Thank you for contacting us. We will get back to you shortly.',
-                timer: 2500,
-                showConfirmButton: false
-            });
-    
-            // Close the modal
-            const contactModal = document.getElementById('contactModal');
-            const modal = bootstrap.Modal.getInstance(contactModal);
-            if (modal) {
-                modal.hide();
+        document.addEventListener('DOMContentLoaded', function () {
+            const sendMessageBtn = document.getElementById('sendMessageBtn');
+            if (sendMessageBtn) {
+                sendMessageBtn.addEventListener('click', function () {
+                    // In a real app, you would gather form data and send it to your server here.
+                    // Example: const name = document.getElementById('contactName').value;
+
+                    // For now, we'll just show a success message.
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Message Sent!',
+                        text: 'Thank you for contacting us. We will get back to you shortly.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+
+                    // Close the modal
+                    const contactModal = document.getElementById('contactModal');
+                    const modal = bootstrap.Modal.getInstance(contactModal);
+                    if (modal) {
+                        modal.hide();
+                    }
+                });
             }
         });
-    }
-});
     </script>
     <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="contactModalLabel"><i class="fa-solid fa-paper-plane me-2"></i>Contact Support</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p class="text-muted small">If you have any questions or need assistance, please fill out the form below. Our team will get back to you shortly.</p>
-                <form id="contactForm">
-                    <div class="mb-3">
-                        <label for="contactName" class="form-label">Your Name</label>
-                        <input type="text" class="form-control" id="contactName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="contactEmail" class="form-label">Your Email</label>
-                        <input type="email" class="form-control" id="contactEmail" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="contactMessage" class="form-label">Message</label>
-                        <textarea class="form-control" id="contactMessage" rows="4" required></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="sendMessageBtn">Send Message</button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactModalLabel"><i class="fa-solid fa-paper-plane me-2"></i>Contact
+                        Support</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">If you have any questions or need assistance, please fill out the form
+                        below. Our team will get back to you shortly.</p>
+                    <form id="contactForm">
+                        <div class="mb-3">
+                            <label for="contactName" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="contactName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactEmail" class="form-label">Your Email</label>
+                            <input type="email" class="form-control" id="contactEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactMessage" class="form-label">Message</label>
+                            <textarea class="form-control" id="contactMessage" rows="4" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="sendMessageBtn">Send Message</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </body>
 
 </html>
