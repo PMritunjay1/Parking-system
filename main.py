@@ -42,8 +42,8 @@ async def add_no_cache_header(request: Request, call_next):
     if "/admin" in request.url.path or "/reports" in request.url.path:
         response.headers["Cache-Control"] = "no-store"
     return response
-
-@app.get("/")
+    
+@app.api_route("/", methods=["GET", "HEAD"])
 def read_root():
     return {"status": "ok", "message": "Parking Management API is running."}
 
@@ -776,3 +776,4 @@ def on_startup():
 if __name__ == "__main__":
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
