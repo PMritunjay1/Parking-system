@@ -42,6 +42,11 @@ async def add_no_cache_header(request: Request, call_next):
     if "/admin" in request.url.path or "/reports" in request.url.path:
         response.headers["Cache-Control"] = "no-store"
     return response
+
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "Parking Management API is running."}
+
 # --- CORS Middleware ---
 # This block allows your frontend to communicate with your API.
 app.add_middleware(
@@ -769,4 +774,5 @@ def on_startup():
 
 # --- Main Entry Point for Running the App ---
 if __name__ == "__main__":
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
