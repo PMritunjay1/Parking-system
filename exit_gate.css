@@ -1,0 +1,210 @@
+/* Exit Gate UI - Page specific styles */
+/* Use Poppins for this page */
+body {
+    font-family: "Poppins", var(--font-sans)
+}
+
+/* Kiosk screen spacing and structure */
+.kiosk-screen {
+    display: block
+}
+
+.kiosk-screen .widget-title {
+    font-weight: 600
+}
+
+/* Scanner area */
+.scanner-area {
+    min-height: 320px;
+    background: var(--surface-0);
+    border: 2px dashed var(--border-color) !important
+}
+
+.scanner-area .scanner-icon {
+    font-size: 3.25rem;
+    color: var(--color-primary);
+    animation: pulseGlow 2.4s ease-in-out infinite
+}
+
+/* Manual entry panel (slide in/out) */
+.manual-entry-panel {
+    display: none
+}
+
+.manual-entry-panel.show {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out
+}
+
+.gate-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Amount emphasis */
+.big-amount {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--text-strong)
+}
+
+/* Payment options */
+.payment-buttons .payment-option {
+    min-width: 140px;
+    padding: 12px 16px;
+    font-weight: 600
+}
+
+.payment-buttons .payment-option.active,
+.payment-buttons .payment-option:focus-visible {
+    box-shadow: var(--shadow-1);
+    border-color: var(--color-primary)
+}
+
+/* UPI Section */
+.upi-qr-box {
+    width: 200px;
+    height: 200px;
+    background: var(--surface-0);
+    display: grid;
+    place-items: center
+}
+
+/* Status icons */
+.status-icon {
+    font-size: 64px
+}
+
+/* Breadcrumb subtle */
+.breadcrumb {
+    margin: 0
+}
+
+.p-md-5 {
+    padding: 2rem !important;
+    height: 32rem;
+}
+
+.x {
+    padding-top: 2rem;
+}
+
+/* Ensure sidebar + main fit correctly */
+/* Hides the sidebar on screens 768px wide or smaller */
+@media (max-width: 991.98px) {
+    #sidebarGate {
+        display: none !important;
+    }
+}
+
+/* Toast contrast fix on light bg */
+#kioskToast.toast {
+    background: var(--surface-0);
+    color: var(--text)
+}
+
+#kioskToast.toast .btn-close-white {
+    filter: invert(1) grayscale(1)
+}
+
+/* Buttons sizing on small screens */
+@media (max-width: 575.98px) {
+    .payment-buttons .payment-option {
+        flex: 1 1 auto
+    }
+}
+
+/* Ensures the main content area doesn't cause page overflow on mobile */
+main.flex-grow-1 {
+    min-width: 0;
+}
+
+/* Make the payment buttons stack nicely on smaller screens */
+.payment-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+@media (max-width: 767.98px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .kiosk-screen {
+        padding: 1.5rem 1rem !important;
+    }
+
+    /* Make headings smaller on mobile */
+    .kiosk-screen h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Stack the buttons in the scanner area */
+    .scanner-area .d-flex {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .scanner-area .btn {
+        width: 100%;
+    }
+
+    /* Improve UPI QR code section on mobile */
+    #upiSection .d-flex {
+        text-align: center;
+    }
+
+    .upi-qr-box {
+        margin: 0 auto;
+        /* Center the QR code */
+    }
+}
+
+
+/* For extra-small screens (phones, less than 576px) */
+@media (max-width: 575.98px) {
+
+    /* Allow items in the top navbar to wrap if needed */
+    .gate-navbar .ms-auto {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        /* Align wrapped items to the right */
+        gap: 0.5rem !important;
+    }
+
+    /* Hide the text on the "Call Attendant" button, showing only the icon */
+    .gate-navbar .attn-btn {
+        font-size: 0;
+        /* Hide text */
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .gate-navbar .attn-btn .fa-headset {
+        margin-right: 0 !important;
+        /* Remove margin from icon */
+        font-size: 1rem;
+        /* Restore icon font size */
+    }
+
+    /* Make the amount due text larger for readability */
+    .big-amount {
+        font-size: 2.5rem;
+    }
+}

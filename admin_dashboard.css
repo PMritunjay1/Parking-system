@@ -1,0 +1,142 @@
+/* admin_dashboard.css - Page-specific styles for Admin Dashboard */
+body {
+    font-family: "Poppins", var(--font-sans)
+}
+
+.flex-grow-1 {
+    min-width: 0;
+}
+
+/* Legend dots */
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle
+}
+.spot:focus {
+    outline: none
+}
+
+/* Vehicles table */
+#vehiclesTable thead th {
+    user-select: none
+}
+
+#vehiclesTable thead th[role="button"] {
+    cursor: pointer
+}
+
+#vehiclesTable tbody tr:hover {
+    background: rgba(0, 0, 0, 0.02)
+}
+
+#activityFeed {
+    max-height: 320px;
+    overflow: auto
+}
+
+/* KPI cards tighten spacing on small screens */
+@media (max-width: 575.98px) {
+    .metric-value {
+        font-size: 1.5rem
+    }
+}
+
+/* Toast tweaks */
+.toast-container {
+    z-index: var(--z-toast, 1060)
+}
+
+.parking-map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
+    gap: 1.5rem;
+    min-height: 200px;
+    align-content: start;
+    max-width: 75%;
+    margin: auto;
+}
+
+/* Ensure parking spot buttons are square */
+.parking-map-grid .spot {
+    aspect-ratio: 1 / 1;
+    border: none;
+    width: 100%;
+    border-radius: 0.25rem;
+}
+
+.card-body {
+    padding-top: 5%;
+}
+
+.mb-2 {
+    font-size: large;
+    padding-bottom: 20px;
+    margin: auto;
+    margin-bottom: 5%;
+}
+
+.im {
+    margin-top: 5rem;
+}
+
+@media (max-width: 991.98px) {
+    .main-panel {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .breadcrumb {
+        display: none;
+    }
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .card-header .flex-wrap {
+        justify-content: flex-start;
+        gap: 0.5rem !important;
+    }
+
+    .card-header .flex-wrap .form-control-sm,
+    .card-header .flex-wrap .form-select-sm {
+        width: 100%;
+    }
+    .metric-value {
+        font-size: 1.75rem;
+    }
+    .metric-title {
+        font-size: 0.8rem;
+    }
+    .manager-footer {
+        position: relative !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .manager-navbar .export-btn {
+        font-size: 0;
+    }
+    .manager-navbar .export-btn .fa-file-pdf {
+        margin-right: 0 !important;
+        font-size: 1rem;
+        /* Restore icon size */
+    }
+    #vehiclesTable th,
+    #vehiclesTable td {
+        white-space: nowrap;
+    }
+
+    .manager-navbar .ms-auto {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.5rem !important;
+    }
+}
+

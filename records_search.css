@@ -1,0 +1,95 @@
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: grid;
+    place-items: center;
+    z-index: 2
+}
+
+/* Table tweaks */
+#resultsTable td,
+#resultsTable th {
+    white-space: nowrap
+}
+
+#resultsTable td:nth-child(4),
+#resultsTable td:nth-child(5) {
+    min-width: 160px
+}
+
+#resultsTable td:nth-child(2) {
+    min-width: 150px
+}
+
+#resultsTable td:nth-child(9) {
+    width: 200px
+}
+
+/* Sort icon color update handled inline via JS; provide default hover state */
+#resultsTable thead th.sortable:hover {
+    color: var(--color-primary)
+}
+
+#entriesChart,
+#exitsChart {
+    max-height: 220px
+}
+
+.navigation-links .btn {
+    min-width: 140px
+}
+
+.status-dot {
+    vertical-align: middle
+}
+
+#mainContent {
+    background: transparent;
+    min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+    .page-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+
+    }
+    .page-header .navigation-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    #searchBtn .fa-magnifying-glass {
+        margin-right: 0 !important;
+    }
+    #searchBtn span {
+        display: none;
+    }
+    #resultsCard .card-footer {
+        align-items: center;
+        text-align: center;
+    }
+
+    .attendant-footer {
+        position: relative !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .attendant-navbar .quick-btn {
+        font-size: 0;
+    }
+
+    .attendant-navbar .quick-btn>i {
+        margin-right: 0 !important;
+        font-size: 1rem;
+        /* Restore icon size */
+    }
+
+    /* Hide the header's quick search form entirely on the smallest screens */
+    .attendant-navbar form[role="search"] {
+        display: none !important;
+    }
+}

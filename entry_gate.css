@@ -1,0 +1,184 @@
+/* Entry Gate UI page-specific styles (entry_gate.css) */
+/* Brand typography override for this page */
+body {
+    font-family: "Poppins", var(--font-sans)
+}
+
+/* Kiosk main card layout */
+.kiosk-card {
+    box-shadow: var(--shadow-2)
+}
+
+.kiosk-card .card-header {
+    background: var(--surface-muted)
+}
+
+.kiosk-card .card-footer {
+    background: var(--surface-muted)
+}
+
+/* Flow steps visibility */
+#entryFlowManager .flow-step {
+    display: none
+}
+
+#entryFlowManager .flow-step.active {
+    display: block
+}
+
+/* Vehicle type buttons */
+.vehicle-type-btn {
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-width: 2px
+}
+
+.vehicle-type-btn:hover {
+    background: var(--neutral-soft)
+}
+
+/* Number display field (read-only) */
+.number-display-field {
+    min-height: 56px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center
+}
+
+.gate-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+#numberDisplay::placeholder {
+      color: #6c757d;      /* A standard bootstrap muted color */
+      opacity: 0.7;         /* Makes the text slightly faded */
+      font-family: 'Times New Roman', Times, serif; /* Sets the font */
+    }
+.boxi{
+    padding-top: 3%;
+}
+
+.kb-key {
+    padding: 0.75rem 0.5rem;
+    font-weight: 600
+}
+
+/* Processing view */
+.processing-view h3 {
+    font-weight: 700
+}
+
+/* QR code panel */
+.qr-panel {
+    background: var(--surface-0)
+}
+
+.qr-code {
+    width: 220px;
+    height: 220px
+}
+
+/* Status screen */
+.status-screen h3 {
+    font-weight: 700
+}
+
+/* Improve buttons for touch */
+.btn {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem
+}
+
+.btn-lg {
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem
+}
+
+/* Ensure sidebar + content play nicely on all widths */
+@media (max-width: 991.98px) {
+    #sidebarGate {
+        display: none !important
+    }
+
+    .gate-footer {
+        position: relative !important;
+    }
+}
+
+/* On medium screens and smaller (tablets and phones) */
+@media (max-width: 768px) {
+    main.container-fluid {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    .breadcrumb {
+        display: none;
+    }
+    .flow-step[data-step="welcome"] h1 {
+        font-size: 2rem;
+    }
+
+    /* Make the step headings smaller */
+    .flow-step h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Ensure the QR code scales down and doesn't overflow its container */
+    #qrcode img {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Stack the footer links on very small screens for readability */
+    .gate-footer .d-flex {
+        flex-direction: column;
+        align-items: center !important;
+        text-align: center;
+    }
+}
+
+
+/* On extra-small screens (phones) */
+@media (max-width: 576px) {
+
+    /* Allow items in the top navbar to wrap if they run out of space */
+    .gate-navbar .ms-auto {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        /* Align wrapped items to the right */
+        gap: 0.5rem !important;
+        /* Reduce gap on small screens */
+
+    }
+
+    /* Hide the text on the "Call Attendant" button, showing only the icon */
+    .gate-navbar .attn-btn {
+        font-size: 0;
+        /* Hide text */
+        padding: 0.375rem 0.75rem;
+    }
+
+    .gate-navbar .attn-btn .fa-headset {
+        margin-right: 0 !important;
+        /* Remove margin from icon */
+        font-size: 1rem;
+        /* Restore icon font size */
+    }
+
+    /* Reduce the size of the large "Tap to Enter" button */
+    #startButton {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    
+}
+.keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 0.25rem; /* Adjust for spacing between keys */
+        }

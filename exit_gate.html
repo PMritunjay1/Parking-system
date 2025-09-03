@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>
+        Exit Gate - Parkify
+    </title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Google Font: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <!-- Global Theme Styles -->
+    <link href="style.css" rel="stylesheet" />
+    <!-- Page-specific CSS -->
+    <link href="exit_gate.css" rel="stylesheet" />
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- Common Gate Terminal Header (Entry & Exit) -->
+    <style>
+        .gate-navbar {
+            background: #03011d;
+        }
+
+        .gate-navbar .navbar-brand span {
+            color: #fff;
+        }
+
+        .gate-navbar .attn-btn {
+            background: #194542;
+            color: #fff;
+            border: 0;
+        }
+
+        .gate-navbar .attn-btn:hover {
+            filter: brightness(1.05);
+        }
+
+        .gate-clock {
+            color: #cfd3d7;
+        }
+    </style>
+    <nav class="navbar navbar-expand-lg navbar-dark gate-navbar px-3">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+            <img alt="Logo" onerror="this.onerror=null;" src="logo.png" style="height:28px;" />
+            <span>
+                Parkify
+            </span>
+        </a>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-language me-1">
+                    </i>
+                    Language
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                    <li>
+                        <a class="dropdown-item" data-lang="en" href="#">
+                            English
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" data-lang="hi" href="#">
+                            हिंदी
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <button class="btn attn-btn btn-sm" id="btnCallAttendant">
+                <i class="fa-solid fa-headset me-1">
+                </i>
+                Call Attendant
+            </button>
+            <div class="gate-clock small">
+                <i class="fa-solid fa-clock me-1">
+                </i>
+                <span id="gateTime">
+                    --:--
+                </span>
+            </div>
+        </div>
+    </nav>
+    <!-- Icons used: fa-language, fa-headset, fa-clock -->
+    <!-- PAGE NAV (Developer navigation; unobtrusive) -->
+
+    <!-- App Layout: Sidebar + Main -->
+    <div class="flex-grow-1 d-flex">
+        <!-- Common Gate Terminal Sidebar (Entry & Exit Kiosks) -->
+        <style>
+            :root {
+                --primary: #03011d;
+                --secondary: #194542;
+            }
+
+            #sidebarGate {
+                width: 260px;
+                background: var(--primary);
+                color: #eaeaea;
+            }
+
+            #sidebarGate .brand-area {
+                border-bottom: 1px solid rgba(255, 255, 255, .08);
+            }
+
+            #sidebarGate .nav .nav-link {
+                color: #cfd3d7;
+                border-radius: .35rem;
+            }
+
+            #sidebarGate .nav .nav-link:hover {
+                background: rgba(25, 69, 66, .25);
+                color: #fff;
+            }
+
+            #sidebarGate .nav .nav-link.active {
+                background: var(--secondary);
+                color: #fff;
+            }
+        </style>
+        <aside class="d-none d-md-flex flex-column vh-100 p-3" id="sidebarGate">
+            <div class="brand-area d-flex align-items-center gap-2 mb-3">
+                <img alt="Logo" onerror="this.onerror=null;this.src='https://picsum.photos/seed/logo/72/72'"
+                    src="https://dsaishared.blob.core.windows.net/uxcceleratecontainer/projects/68aefca48ecfc2752de0a4e6/logos/logo_8a6ad475-2595-482f-9695-3ec60565bb2a.png"
+                    style="height:36px;" />
+                <span class="fw-semibold">
+                    Parking Kiosk
+                </span>
+            </div>
+            <nav class="nav flex-column mt-2">
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#contactModal">
+                    <i class="fa-solid fa-circle-question me-2"></i> Help
+                </a>
+                <a class="nav-link" href="#lang">
+                    <i class="fa-solid fa-language me-2">
+                    </i>
+                    Language
+                </a>
+                <a class="nav-link" href="#safety">
+                    <i class="fa-solid fa-shield-heart me-2">
+                    </i>
+                    Safety Tips
+                </a>
+            </nav>
+            <div class="mt-auto small text-muted">
+                For assistance, press the 'Need Help' button on screen.
+            </div>
+            <!-- Icons used: fa-circle-question, fa-language, fa-shield-heart -->
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-grow-1 p-3 p-md-4">
+            <div class="bg-muted border-bottom">
+
+                <nav aria-label="breadcrumb" class="container-max pill-nav mb-0 d-none d-md-flex">
+                    <span class="breadcrumb-item">
+                        <a href="./entry_gate.html">Entry Gate</a>
+                    </span>
+                    <span class="breadcrumb-item">
+                        <a href="./exit_gate.html" class="active">Exit Gate</a>
+                    </span>
+                    <span class="breadcrumb-item">
+                        <a href="./index.html">Login</a>
+                    </span>
+                    <span class="breadcrumb-item">
+                        <a href="./admin_dashboard.html">Admin</a>
+                    </span>
+                    <span class="breadcrumb-item">
+                        <a href="./records_search.html">Records</a>
+                    </span>
+                    <span class="breadcrumb-item">
+                        <a href="./reports_page.html">Reports</a>
+                    </span>
+                </nav>
+
+                <div class="dropdown d-md-none p-2">
+                    <button class="btn btn-secondary dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        <i class="fa-solid fa-bars me-2"></i> Quick Navigation
+                    </button>
+                    <ul class="dropdown-menu w-100">
+                        <li><a class="dropdown-item" href="./entry_gate.html">Entry Gate</a></li>
+                        <li><a class="dropdown-item" href="./exit_gate.html">Exit Gate</a></li>
+                        <li><a class="dropdown-item" href="./index.html">Login</a></li>
+                        <li><a class="dropdown-item" href="./admin_dashboard.html">Admin</a></li>
+                        <li><a class="dropdown-item" href="./records_search.html">Records</a></li>
+                        <li><a class="dropdown-item" href="./reports_page.html">Reports</a></li>
+                    </ul>
+                </div>
+
+            </div>
+            <div class="container-max">
+                <header class="page-header mb-3 x">
+                    <div class="d-flex align-items-center gap-2">
+                        <h1 class="page-title mb-0">
+                            Exit Gate
+                        </h1>
+                        <span class="badge-soft info">
+                            Self-Service
+                        </span>
+                    </div>
+                    <div aria-label="View options" class="view-switcher" role="group">
+                        <div class="option active">
+                            <i class="fa-solid fa-rectangle-list me-1">
+                            </i>
+                            Kiosk
+                        </div>
+                    </div>
+                </header>
+                <!-- ExitProcessManager Container -->
+                <section class="app-card p-0" id="exitProcessManager">
+                    <!-- TicketValidationScreen -->
+                    <div class="kiosk-screen p-3 p-md-5" id="screen-scan">
+                        <div class="text-center mb-3">
+                            <h2 class="mb-1">
+                                Thank you for visiting!
+                            </h2>
+                            <p class="text-muted mb-0">
+                                Please scan your digital ticket or enter your Ticket ID below.
+                            </p>
+                        </div>
+                        <div class="row g-4 align-items-stretch">
+                            <div class="col-12 col-lg-7">
+                                <div class="scanner-area h-100 d-flex flex-column align-items-center justify-content-center rounded border position-relative"
+                                    id="qrScannerArea">
+                                    <i class="fa-solid fa-qrcode scanner-icon mb-2">
+                                    </i>
+                                    <p class="text-muted">
+                                        Present your QR code to the scanner
+                                    </p>
+                                    <div class="mt-3 d-flex gap-2">
+                                        <button class="btn btn-primary" id="btnSimulateScan">
+                                            <i class="fa-solid fa-qrcode me-2">
+                                            </i>
+                                            Simulate QR Scan
+                                        </button>
+                                        <button class="btn btn-light" id="btnShowManual">
+                                            <i class="fa-solid fa-keyboard me-2">
+                                            </i>
+                                            Enter Ticket ID Manually
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-5">
+                                <div class="manual-entry-panel card h-100" id="manualPanel">
+                                    <div class="card-header">
+                                        <div class="title d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-id-card-clip text-info">
+                                            </i>
+                                            Manual Ticket Validation
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="ticketIdInput">
+                                                Ticket ID
+                                            </label>
+                                            <input autocomplete="one-time-code" class="form-control" id="ticketIdInput"
+                                                inputmode="numeric" placeholder="Enter Ticket ID" type="text" />
+                                            <div class="form-text">
+                                                Tip: Use the on-screen keyboard if available.
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-primary" id="btnSubmitTicketId">
+                                                <i class="fa-solid fa-check me-2">
+                                                </i>
+                                                Submit
+                                            </button>
+                                            <button class="btn btn-outline-secondary" id="btnHideManual">
+                                                <i class="fa-solid fa-xmark me-2">
+                                                </i>
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-warning w-100" id="btnHelpLost">
+                                        <i class="fa-solid fa-life-ring me-2">
+                                        </i>
+                                        Need Help / Lost Ticket?
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- PaymentSummaryScreen -->
+                    <div class="kiosk-screen p-3 p-md-5 d-none" id="screen-payment">
+                        <div class="row g-4">
+                            <div class="col-12 col-lg-6">
+                                <div class="metric-card h-100">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <div class="metric-title">
+                                                Parking Duration
+                                            </div>
+                                            <div class="fs-4 fw-bold text-strong" id="durationValue">
+                                                --
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-hourglass-half text-info fs-3">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <div class="metric-card h-100">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <div class="metric-title">
+                                                Total Amount Due
+                                            </div>
+                                            <div class="big-amount" id="amountValue">
+                                                --
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-indian-rupee-sign text-success fs-3">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="widget-title mb-2">
+                                Select a Payment Method
+                            </div>
+                            <div class="payment-buttons d-flex flex-wrap gap-2" id="paymentButtons">
+                                <button class="btn btn-outline-secondary payment-option" data-method="cash">
+                                    <i class="fa-solid fa-money-bill-wave me-2">
+                                    </i>
+                                    Cash
+                                </button>
+                                <button class="btn btn-outline-secondary payment-option" data-method="card">
+                                    <i class="fa-solid fa-credit-card me-2">
+                                    </i>
+                                    Card
+                                </button>
+                                <button class="btn btn-outline-secondary payment-option" data-method="upi">
+                                    <i class="fa-solid fa-qrcode me-2">
+                                    </i>
+                                    UPI
+                                </button>
+                            </div>
+                        </div>
+                        <div class="upi-section d-none mt-4" id="upiSection">
+                            <div class="app-card p-3">
+                                <div class="d-flex flex-column flex-md-row align-items-center gap-3">
+                                    <div class="upi-qr-box rounded border" id="upiQr">
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1">
+                                            Scan to Pay with UPI
+                                        </h5>
+                                        <p class="text-muted mb-2">
+                                            Use any UPI app to scan and pay. After completing the payment, press the
+                                            confirm button below.
+                                        </p>
+                                        <button class="btn btn-success" id="btnConfirmUpiPayment">
+                                            <i class="fa-solid fa-check me-2">
+                                            </i>
+                                            I have paid
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="small text-muted">
+                                    <i class="fa-solid fa-hourglass-end me-1">
+                                    </i>
+                                    Payment will timeout in
+                                    <span id="countdownLabel">
+                                        120
+                                    </span>
+                                    sec
+                                </div>
+                                <button class="btn btn-light btn-sm" id="btnCancelPayment">
+                                    <i class="fa-solid fa-arrow-left me-1">
+                                    </i>
+                                    Back
+                                </button>
+                            </div>
+                            <div aria-label="Payment timeout" aria-valuemax="120" aria-valuemin="0" class="progress"
+                                role="progressbar">
+                                <div class="progress-bar" id="timeoutBar" style="width: 100%">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- TransactionStatusScreen (Success/Failure) -->
+                    <div class="kiosk-screen p-3 p-md-5 d-none text-center" id="screen-status">
+                        <div class="status-icon-wrap mb-3">
+                            <i class="fa-solid fa-circle-check status-icon text-success" id="statusIcon">
+                            </i>
+                        </div>
+                        <h3 class="mb-2" id="statusTitle">
+                            Payment Successful
+                        </h3>
+                        <p class="text-muted mb-4" id="statusMessage">
+                            The barrier is opening. Please exit safely.
+                        </p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-primary" id="btnNewExit">
+                                <i class="fa-solid fa-rotate me-2">
+                                </i>
+                                New Exit
+                            </button>
+                            <a class="btn btn-light" href="./admin_dashboard.html">
+                                <i class="fa-solid fa-screwdriver-wrench me-2">
+                                </i>
+                                Admin
+                            </a>
+                        </div>
+                    </div>
+                    <!-- Assistance Screen -->
+                    <div class="kiosk-screen p-3 p-md-5 d-none text-center" id="screen-assistance">
+                        <div class="status-icon-wrap mb-3">
+                            <i class="fa-solid fa-headset status-icon text-warning">
+                            </i>
+                        </div>
+                        <h3 class="mb-2">
+                            Help is on the way
+                        </h3>
+                        <p class="text-muted mb-3">
+                            An attendant has been notified and will be with you shortly. Please remain at the gate.
+                        </p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-light" id="btnAssistCancel">
+                                <i class="fa-solid fa-arrow-left me-2">
+                                </i>
+                                Back
+                            </button>
+                            <button class="btn btn-warning" id="btnAssistCall">
+                                <i class="fa-solid fa-bell me-2">
+                                </i>
+                                Notify Again
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                <!-- System Toasts -->
+                <div aria-atomic="true" aria-live="polite" class="position-fixed bottom-0 end-0 p-3"
+                    style="z-index: var(--z-toast);">
+                    <div aria-atomic="true" aria-live="assertive" class="toast align-items-center text-bg-light border"
+                        id="kioskToast" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                System message
+                            </div>
+                            <button aria-label="Close" class="btn-close btn-close-white me-2 m-auto"
+                                data-bs-dismiss="toast" type="button">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Bottom Bar: live logs/status -->
+    <div class="bottom-bar">
+        <div class="log-line" id="logLine">
+            Ready. Waiting for ticket scan...
+        </div>
+    </div>
+    <!-- Common Gate Terminal Footer -->
+    <style>
+        .gate-footer {
+            background: #0f1230;
+            color: #cfd3d7;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .gate-footer a {
+            color: #cfd3d7;
+            text-decoration: none;
+        }
+
+        .gate-footer a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 875px) {
+            .gate-footer {
+                position: relative !important;
+            }
+        }
+    </style>
+    <footer class="gate-footer mt-auto py-2 px-3">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+            <small>
+                By proceeding, you agree to our
+                <a href="#terms">
+                    Terms
+                </a>
+                and
+                <a href="#privacy">
+                    Privacy Policy
+                </a>
+                .
+            </small>
+            <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal"
+                data-bs-target="#contactModal">
+                <i class="fa-solid fa-envelope me-1"></i> Contact Us
+            </button>
+            <small>
+                For help, press the on-screen Help button.
+            </small>
+        </div>
+    </footer>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js">
+    </script>
+    <!-- QRCode Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
+    <script src="exit_gate.js" defer></script>
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactModalLabel"><i class="fa-solid fa-paper-plane me-2"></i>Contact
+                        Support</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">If you have any questions or need assistance, please fill out the form
+                        below. Our team will get back to you shortly.</p>
+                    <form id="contactForm">
+                        <div class="mb-3">
+                            <label for="contactName" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="contactName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactEmail" class="form-label">Your Email</label>
+                            <input type="email" class="form-control" id="contactEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactMessage" class="form-label">Message</label>
+                            <textarea class="form-control" id="contactMessage" rows="4" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="sendMessageBtn">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="cardPaymentModal" tabindex="-1" aria-labelledby="cardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cardModalLabel">Enter Card Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalCardNumber" class="form-label">Card Number</label>
+                        <input type="text" class="form-control" id="modalCardNumber" placeholder="16 digits"
+                            maxlength="16">
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label for="modalCardExpiry" class="form-label">Expiry</label>
+                            <input type="text" class="form-control" id="modalCardExpiry" placeholder="MM/YY"
+                                maxlength="5">
+                        </div>
+                        <div class="col">
+                            <label for="modalCardCvc" class="form-label">CVC</label>
+                            <input type="text" class="form-control" id="modalCardCvc" placeholder="3-4 digits"
+                                maxlength="4">
+                        </div>
+                    </div>
+                    <div id="cardValidationError" class="text-danger small mt-2 d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="modalPayButton">Pay Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

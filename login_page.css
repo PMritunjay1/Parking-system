@@ -1,0 +1,68 @@
+/* login_page.css — Page-specific styles for Login Page */
+/* Use Poppins as primary font on this page */
+body {
+    font-family: "Poppins", var(--font-sans)
+}
+
+/* Center the login shell nicely on large screens */
+@media (min-width: 992px) {
+    .login-form-container {
+        margin-top: var(--space-6);
+        margin-bottom: var(--space-6)
+    }
+}
+
+/* Enhance the login form container appearance slightly for auth context */
+.login-form-container {
+    /* uses base look from style.css */
+    border-radius: var(--radius-2)
+}
+
+/* Align the password visibility toggle inside the input */
+.toggle-visibility-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translatey(-50%);
+    font-size: 0.95rem;
+}
+
+.auth-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1020;
+}
+
+@media (max-width: 1100px) {
+    .auth-footer {
+        position: relative !important;
+    }
+}
+
+
+.align-items-center {
+    margin: auto !important;
+}
+
+/* Improve spacing for the header section inside login card */
+.login-form-container h1.h4 {
+    color: var(--text-strong)
+}
+
+/* Make the test accounts table compact and readable */
+.table-theme thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1
+}
+
+.table-theme tbody tr:hover {
+    background: rgba(3, 1, 29, 0.03)
+}
+
+/* Buttons: ensure full-width on small devices for better ergonomics */
+@media (max-width: 575.98px) {
+    #loginBtn {
+        width: 100%
+    }
+}
