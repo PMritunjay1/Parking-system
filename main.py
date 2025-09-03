@@ -14,14 +14,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+
 # --- Configuration ---
-DATABASE_URL = "sqlite:///./parkinglot.db"
+# Reads the database URL from an environment variable for deployment
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./parkinglot.db")
 SECRET_KEY = "a_very_secret_key_for_jwt"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 # --- Database Setup ---
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -35,6 +37,13 @@ app = FastAPI(
     description="API for a comprehensive parking lot management system.",
     version="1.0.0",
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"], # Allows all methods
+    allow_headers=["*"], # Allows all headers
+)
 @app.middleware("http")
 async def add_no_cache_header(request: Request, call_next):
     response = await call_next(request)
@@ -42,21 +51,19 @@ async def add_no_cache_header(request: Request, call_next):
     if "/admin" in request.url.path or "/reports" in request.url.path:
         response.headers["Cache-Control"] = "no-store"
     return response
-    
+
 @app.api_route("/", methods=["GET", "HEAD"])
 def read_root():
     return {"status": "ok", "message": "Parking Management API is running."}
 
-# --- CORS Middleware ---
-# This block allows your frontend to communicate with your API.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allows all origins
+    allow_origins=["*"], 
     allow_credentials=True,
-    allow_methods=["*"], # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"], # Allows all headers
-)
+    allow_methods=["*"],
+    allow_headers=["*"], 
 
+)
 # --- SQLAlchemy ORM Models ---
 class ParkingLot(Base):
     __tablename__ = "ParkingLot"
@@ -123,11 +130,6 @@ class Payment(Base):
 
 # --- Pydantic Models ---
 
-# Auth
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
 class TokenData(BaseModel):
     username: Optional[str] = None
     role: Optional[str] = None
@@ -136,13 +138,6 @@ class AuthResponse(BaseModel):
     access_token: str
     user_role: str
     token_expiry: datetime
-
-class SystemUserResponse(BaseModel):
-    user_id: int
-    username: str
-    role: str
-    class Config:
-        from_attributes = True
 
 # Entry
 class EntryConfigResponse(BaseModel):
@@ -187,7 +182,10 @@ class DashboardSummaryResponse(BaseModel):
     available_spots: int
     breakdown_by_lot: Dict[str, Dict[str, int]]
     breakdown_by_size: Dict[str, int]
-
+class DashboardTrendsResponse(BaseModel):
+    labels: List[str]  # e.g., ["Mon", "Tue", "Wed"]
+    entries_data: List[int]
+    exits_data: List[int]
 # Admin Lot Map
 class SpotStatus(BaseModel):
     spot_id: int
@@ -204,9 +202,12 @@ class LotMapResponse(BaseModel):
 class TicketResponse(BaseModel):
     ticket_id: int
     vehicle_number: str
+    vehicle_type: str
     spot_number: str
     lot_name: str
     entry_time: datetime
+    exit_time: Optional[datetime]  
+    total_amount: Optional[float]  
     status: str
     class Config:
         from_attributes = True
@@ -253,6 +254,8 @@ class AssistedExitResponse(BaseModel):
 class RevenueReportResponse(BaseModel):
     report_period: Dict[str, datetime]
     total_revenue: float
+    total_transactions: int
+    average_ticket: float
     revenue_by_payment_method: Dict[str, float]
     revenue_by_lot: Dict[str, float]
     revenue_from_penalties: float
@@ -290,14 +293,21 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def calculate_fee(duration_minutes: int) -> float:
-    """Simple fee calculation: $5 for the first hour, $3 for each subsequent hour."""
+def calculate_fee(duration_minutes: int, vehicle_type: str) -> float:
     if duration_minutes <= 0:
         return 0.0
-    hours = (duration_minutes + 59) // 60  # Round up to the next hour
+    # Define pricing tiers
+    pricing = {
+        "Motorcycle": {"first_hour": 10.0, "subsequent_hour": 5.0},
+        "Compact": {"first_hour": 25.0, "subsequent_hour": 12.0},
+        "Large": {"first_hour": 50.0, "subsequent_hour": 25.0}
+    }
+    # Default to Compact pricing if type is unknown
+    rates = pricing.get(vehicle_type, pricing["Compact"])
+    hours = (duration_minutes + 59) // 60  
     if hours <= 1:
-        return 5.0
-    return 5.0 + (hours - 1) * 3.0
+        return rates["first_hour"]
+    return rates["first_hour"] + (hours - 1) * rates["subsequent_hour"]
 
 # --- Authentication and Authorization ---
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> SystemUser:
@@ -361,9 +371,9 @@ entry_router = FastAPI().router
 async def get_entry_config():
     return {
         "fee_structure_details": {
-            "first_hour": 5.00,
-            "subsequent_hour": 3.00,
-            "lost_ticket_penalty": 50.00
+            "Motorcycle": {"first_hour": 10.0, "subsequent_hour": 5.0, "lost_ticket_penalty": 100.0},
+            "Compact": {"first_hour": 25.0, "subsequent_hour": 12.0, "lost_ticket_penalty": 250.0},
+            "Large": {"first_hour": 50.0, "subsequent_hour": 25.0, "lost_ticket_penalty": 500.0}
         },
         "supported_vehicle_types": ["Motorcycle", "Compact", "Large"]
     }
@@ -419,7 +429,7 @@ async def get_exit_details(ticket_id: int, db: Session = Depends(get_db)):
     current_time = datetime.utcnow()
     duration = current_time - ticket.entry_time
     duration_minutes = int(duration.total_seconds() / 60)
-    fee = calculate_fee(duration_minutes)
+    fee = calculate_fee(duration_minutes, ticket.vehicle.vehicle_type)
 
     return {
         "ticket_id": ticket.ticket_id,
@@ -439,7 +449,8 @@ async def process_payment(request: ExitPaymentRequest, db: Session = Depends(get
     current_time = datetime.utcnow()
     duration = current_time - ticket.entry_time
     duration_minutes = int(duration.total_seconds() / 60)
-    fee = calculate_fee(duration_minutes)
+    vehicle_type = ticket.vehicle.vehicle_type
+    fee = calculate_fee(duration_minutes, vehicle_type)
 
     if request.amount_paid < fee:
         raise HTTPException(status_code=400, detail=f"Insufficient payment. Required: {fee}, Paid: {request.amount_paid}")
@@ -474,17 +485,13 @@ async def process_payment(request: ExitPaymentRequest, db: Session = Depends(get
 # Admin Router
 admin_router = FastAPI().router
 
-# In main.py, replace the whole function with this corrected version
-
-@app.get("/admin/dashboard/summary", response_model=DashboardSummaryResponse, dependencies=[Depends(get_current_admin_user)], tags=["Administration"])
+@admin_router.get("/dashboard/summary", response_model=DashboardSummaryResponse, dependencies=[Depends(get_current_admin_user)])
 async def get_dashboard_summary(db: Session = Depends(get_db)):
     total_spots = db.query(ParkingSpot).count()
     occupied_spots = db.query(ParkingSpot).filter(ParkingSpot.status == 'occupied').count()
-
     lot_breakdown_query = db.query(
         ParkingLot.name, 
         func.count(ParkingSpot.spot_id).label('total'),
-        # CORRECTED SYNTAX: The square brackets [] are removed from case()
         func.sum(case((ParkingSpot.status == 'occupied', 1), else_=0)).label('occupied')
     ).join(ParkingSpot).group_by(ParkingLot.name).all()
     
@@ -501,7 +508,49 @@ async def get_dashboard_summary(db: Session = Depends(get_db)):
         "breakdown_by_size": breakdown_by_size
     }
 
-@admin_router.get("/admin/parking-lots/{lot_id}/map", response_model=LotMapResponse, dependencies=[Depends(get_current_admin_user)])
+# NEW: The trends endpoint for the charts
+@admin_router.get("/dashboard/trends", response_model=DashboardTrendsResponse, dependencies=[Depends(get_current_admin_user)])
+async def get_dashboard_trends(db: Session = Depends(get_db)):
+    try:
+        today = datetime.utcnow().date()
+        seven_days_ago = today - timedelta(days=6)
+        date_range = [seven_days_ago + timedelta(days=i) for i in range(7)]
+        
+        entries_query = db.query(
+            func.date(Ticket.entry_time).label('date'),
+            func.count(Ticket.ticket_id).label('count')
+        ).filter(
+            func.date(Ticket.entry_time).between(seven_days_ago, today)
+        ).group_by(func.date(Ticket.entry_time)).all()
+        
+        exits_query = db.query(
+            func.date(Ticket.exit_time).label('date'),
+            func.count(Ticket.ticket_id).label('count')
+        ).filter(
+            Ticket.exit_time.isnot(None),
+            func.date(Ticket.exit_time).between(seven_days_ago, today)
+        ).group_by(func.date(Ticket.exit_time)).all()
+
+        entries_dict = {entry.date: entry.count for entry in entries_query}
+        exits_dict = {exit.date: exit.count for exit in exits_query}
+        
+        labels = [d.strftime("%a") for d in date_range]
+        entries_data = [entries_dict.get(d.isoformat(), 0) for d in date_range]
+        exits_data = [exits_dict.get(d.isoformat(), 0) for d in date_range]
+
+        return {
+            "labels": labels,
+            "entries_data": entries_data,
+            "exits_data": exits_data
+        }
+    except Exception as e: # <-- ADD THIS EXCEPT BLOCK
+        print(f"An error occurred in get_dashboard_trends: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An internal error occurred: {str(e)}"
+        )
+
+@admin_router.get("/parking-lots/{lot_id}/map", response_model=LotMapResponse, dependencies=[Depends(get_current_admin_user)])
 async def get_lot_map(lot_id: int, db: Session = Depends(get_db)):
     lot = db.query(ParkingLot).filter(ParkingLot.lot_id == lot_id).first()
     if not lot:
@@ -515,7 +564,11 @@ async def get_lot_map(lot_id: int, db: Session = Depends(get_db)):
         "spots_array": spots
     }
 
-@admin_router.get("/admin/tickets", response_model=List[TicketResponse], dependencies=[Depends(get_current_admin_user)])
+
+# In main.py, REPLACE the entire get_tickets function with this one
+# In main.py, REPLACE the entire get_tickets function
+
+@admin_router.get("/tickets", response_model=List[TicketResponse], dependencies=[Depends(get_current_admin_user)])
 async def get_tickets(
     status: Optional[str] = Query(None, description="Filter by status e.g., 'active', 'paid'"),
     vehicle_number: Optional[str] = Query(None, description="Filter by vehicle number"),
@@ -523,65 +576,63 @@ async def get_tickets(
     sort_by: Optional[str] = Query('entry_time_desc', description="Sort order e.g., 'entry_time_desc'"),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Ticket).join(Vehicle).join(ParkingSpot).join(ParkingLot)
+    try:
+        query = db.query(
+            Ticket, 
+            Payment.total_amount
+        ).outerjoin(Payment, Ticket.ticket_id == Payment.ticket_id) \
+         .join(Vehicle, Ticket.vehicle_id == Vehicle.vehicle_id) \
+         .join(ParkingSpot, Ticket.spot_id == ParkingSpot.spot_id) \
+         .join(ParkingLot, ParkingSpot.lot_id == ParkingLot.lot_id)
 
-    if status:
-        query = query.filter(Ticket.status == status)
-    if vehicle_number:
-        query = query.filter(Vehicle.vehicle_number.ilike(f"%{vehicle_number}%"))
-    if spot_id:
-        query = query.filter(Ticket.spot_id == spot_id)
+        if status:
+            query = query.filter(Ticket.status == status)
+        if vehicle_number:
+            query = query.filter(Vehicle.vehicle_number.ilike(f"%{vehicle_number}%"))
+        if spot_id:
+            query = query.filter(Ticket.spot_id == spot_id)
 
-    if sort_by == 'entry_time_desc':
-        query = query.order_by(Ticket.entry_time.desc())
-    elif sort_by == 'entry_time_asc':
-        query = query.order_by(Ticket.entry_time.asc())
+        if sort_by == 'entry_time_desc':
+            query = query.order_by(Ticket.entry_time.desc())
+        elif sort_by == 'entry_time_asc':
+            query = query.order_by(Ticket.entry_time.asc())
 
-    tickets = query.limit(100).all()
-    
-    response = []
-    for t in tickets:
-        response.append({
-            "ticket_id": t.ticket_id,
-            "vehicle_number": t.vehicle.vehicle_number,
-            "spot_number": t.spot.spot_number,
-            "lot_name": t.spot.lot.name,
-            "entry_time": t.entry_time,
-            "status": t.status
-        })
-    return response
+        ticket_results = query.limit(100).all()
+        
+        response = []
+        current_time = datetime.utcnow() # Get current time once for consistency
 
-@admin_router.get("/admin/tickets/{ticket_id}", response_model=TicketDetailResponse, dependencies=[Depends(get_current_admin_user)])
-async def get_ticket_details(ticket_id: int, db: Session = Depends(get_db)):
-    ticket = db.query(Ticket).filter(Ticket.ticket_id == ticket_id).first()
-    if not ticket:
-        raise HTTPException(status_code=404, detail="Ticket not found")
+        for t, db_total_amount in ticket_results:
+            final_amount = db_total_amount
 
-    payment_details = None
-    if ticket.payment:
-        payment_details = {
-            "payment_id": ticket.payment.payment_id,
-            "base_fee": ticket.payment.base_fee,
-            "penalty_amount": ticket.payment.penalty.amount if ticket.payment.penalty else None,
-            "total_amount": ticket.payment.total_amount,
-            "payment_method": ticket.payment.payment_method,
-            "payment_status": ticket.payment.payment_status,
-            "transaction_time": ticket.payment.transaction_time
-        }
+            # --- NEW LOGIC: If the ticket is active, calculate the current fee ---
+            if t.status == 'active':
+                duration = current_time - t.entry_time
+                duration_minutes = int(duration.total_seconds() / 60)
+                final_amount = calculate_fee(duration_minutes, t.vehicle.vehicle_type)
+            # --- END OF NEW LOGIC ---
 
-    return {
-        "ticket_id": ticket.ticket_id,
-        "vehicle_number": ticket.vehicle.vehicle_number,
-        "vehicle_type": ticket.vehicle.vehicle_type,
-        "spot_number": ticket.spot.spot_number,
-        "lot_name": ticket.spot.lot.name,
-        "entry_time": ticket.entry_time,
-        "exit_time": ticket.exit_time,
-        "status": ticket.status,
-        "payment_details": payment_details
-    }
+            response.append({
+                "ticket_id": t.ticket_id,
+                "vehicle_number": t.vehicle.vehicle_number,
+                "vehicle_type": t.vehicle.vehicle_type,
+                "spot_number": t.spot.spot_number,
+                "lot_name": t.spot.lot.name,
+                "entry_time": t.entry_time,
+                "exit_time": t.exit_time,
+                "total_amount": final_amount, # Use either the DB amount or the newly calculated one
+                "status": t.status
+            })
+        return response
 
-@admin_router.post("/admin/exit/assisted", response_model=AssistedExitResponse, dependencies=[Depends(get_current_admin_user)])
+    except Exception as e:
+        print(f"An error occurred in get_tickets: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An internal error occurred while fetching tickets: {str(e)}"
+        )
+
+@admin_router.post("/exit/assisted", response_model=AssistedExitResponse, dependencies=[Depends(get_current_admin_user)])
 async def assisted_exit(request: AssistedExitRequest, db: Session = Depends(get_db)):
     ticket = db.query(Ticket).join(Vehicle).filter(
         Vehicle.vehicle_number == request.vehicle_number,
@@ -598,14 +649,16 @@ async def assisted_exit(request: AssistedExitRequest, db: Session = Depends(get_
     penalty_amount = 0.0
     penalty = None
     current_time = datetime.utcnow()
+    vehicle_type = ticket.vehicle.vehicle_type 
 
     if ticket:
         duration = current_time - ticket.entry_time
         duration_minutes = int(duration.total_seconds() / 60)
-        base_fee = calculate_fee(duration_minutes)
+        base_fee = calculate_fee(duration_minutes,vehicle_type)
 
     if request.exit_reason == 'LOST_TICKET':
-        penalty = db.query(Penalty).filter(Penalty.penalty_type == 'LOST_TICKET').first()
+        penalty_type_str = f"LOST_TICKET_{vehicle_type.upper()}"
+        penalty = db.query(Penalty).filter(Penalty.penalty_type == penalty_type_str).first()
         if penalty:
             penalty_amount = penalty.amount
     
@@ -643,14 +696,16 @@ async def assisted_exit(request: AssistedExitRequest, db: Session = Depends(get_
         "penalty_applied": float(penalty_amount) if penalty_amount > 0 else None,
         "message": "Assisted exit processed successfully."
     }
-@admin_router.get("/admin/reports/revenue", response_model=RevenueReportResponse, dependencies=[Depends(get_current_admin_user)])
+@admin_router.get("/reports/revenue", response_model=RevenueReportResponse, dependencies=[Depends(get_current_admin_user)])
 async def get_revenue_report(
     start_date: datetime, 
     end_date: datetime, 
     db: Session = Depends(get_db)
 ):
     payments_query = db.query(Payment).filter(Payment.transaction_time.between(start_date, end_date))
+    total_transactions = payments_query.count()
     total_revenue = payments_query.with_entities(func.sum(Payment.total_amount)).scalar() or 0
+    average_ticket = (total_revenue / total_transactions) if total_transactions > 0 else 0.0
 
     revenue_by_method = db.query(
         Payment.payment_method,
@@ -670,6 +725,8 @@ async def get_revenue_report(
     return {
         "report_period": {"start_date": start_date, "end_date": end_date},
         "total_revenue": total_revenue,
+        "total_transactions": total_transactions, # Add to response
+        "average_ticket": average_ticket, 
         "revenue_by_payment_method": dict(revenue_by_method),
         "revenue_by_lot": dict(revenue_by_lot),
         "revenue_from_penalties": revenue_from_penalties
@@ -677,7 +734,7 @@ async def get_revenue_report(
 
 # In main.py, replace the whole function with this corrected version
 
-@app.get("/admin/reports/occupancy", response_model=OccupancyReportResponse, dependencies=[Depends(get_current_admin_user)], tags=["Administration"])
+@admin_router.get("/reports/occupancy", response_model=OccupancyReportResponse, dependencies=[Depends(get_current_admin_user)], tags=["Administration"])
 async def get_occupancy_report(
     start_date: datetime, 
     end_date: datetime, 
@@ -721,22 +778,23 @@ async def get_occupancy_report(
 app.include_router(auth_router, tags=["Authentication"])
 app.include_router(entry_router, tags=["Entry Terminal"])
 app.include_router(exit_router, tags=["Exit Terminal"])
-app.include_router(admin_router, tags=["Administration"])
-
+app.include_router(admin_router, prefix="/admin", tags=["Administration"])
 
 # --- Application Startup Event ---
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    print("--- Attempting to connect to the database... ---")
     db = SessionLocal()
     try:
         # Create users if they don't exist
+        print("--- Database connection established successfully. Initializing data... ---")
         if not db.query(SystemUser).first():
             db.add(SystemUser(username="admin", password_hash=get_password_hash("admin123"), role="Administrator"))
             db.add(SystemUser(username="attendant1", password_hash=get_password_hash("attendant123"), role="Attendant"))
             db.add(SystemUser(username="attendant2", password_hash=get_password_hash("attendant123"), role="Attendant"))
-            db.add(SystemUser(username="manager", password_hash=get_password_hash("manager123"), role="Manager"))
-            db.add(SystemUser(username="records", password_hash=get_password_hash("records123"), role="Manager"))
+            db.add(SystemUser(username="manager", password_hash=get_password_hash("manager123"), role="manager"))
+            db.add(SystemUser(username="records", password_hash=get_password_hash("records123"), role="records"))
 
         # Create lots and spots if they don't exist
         if not db.query(ParkingLot).first():
@@ -764,16 +822,15 @@ def on_startup():
 
             db.bulk_save_objects(spots_to_add)
 
-        # Create penalty if it doesn't exist
         if not db.query(Penalty).first():
-            db.add(Penalty(penalty_type="LOST_TICKET", amount=50.00))
-        
-        db.commit()
+            db.add(Penalty(penalty_type="LOST_TICKET_MOTORCYCLE", amount=100.00))
+            db.add(Penalty(penalty_type="LOST_TICKET_COMPACT", amount=250.00))
+            db.add(Penalty(penalty_type="LOST_TICKET_LARGE", amount=500.00))
+            db.commit()
     finally:
         db.close()
 
 # --- Main Entry Point for Running the App ---
 if __name__ == "__main__":
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
