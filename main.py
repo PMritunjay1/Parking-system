@@ -794,6 +794,7 @@ def on_startup():
     try:
         # Create users if they don't exist
         print("--- Database connection established successfully. Initializing data... ---")
+        made_changes = False
         if not db.query(SystemUser).first():
             db.add(SystemUser(username="admin", password_hash=get_password_hash("admin123"), role="Administrator"))
             db.add(SystemUser(username="attendant1", password_hash=get_password_hash("attendant123"), role="Attendant"))
@@ -826,12 +827,16 @@ def on_startup():
             for i in range(21, 31): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Large"))
 
             db.bulk_save_objects(spots_to_add)
+            made_changes = True
 
         if not db.query(Penalty).first():
             db.add(Penalty(penalty_type="LOST_TICKET_MOTORCYCLE", amount=100.00))
             db.add(Penalty(penalty_type="LOST_TICKET_COMPACT", amount=250.00))
             db.add(Penalty(penalty_type="LOST_TICKET_LARGE", amount=500.00))
+            made_changes = True
+        if made_changes:
             db.commit()
+            print("--- Initial data committed to the database. ---")
     finally:
         db.close()
 
@@ -839,4 +844,5 @@ def on_startup():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+
 
