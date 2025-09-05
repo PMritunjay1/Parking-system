@@ -778,8 +778,6 @@ async def get_revenue_report(
         "revenue_from_penalties": revenue_from_penalties
     }
 
-# In main.py, replace the whole function with this corrected version
-
 @admin_router.get("/reports/occupancy", response_model=OccupancyReportResponse, dependencies=[Depends(get_current_admin_user)], tags=["Administration"])
 async def get_occupancy_report(
     start_date: datetime, 
@@ -836,6 +834,16 @@ async def submit_contact_message(request: ContactMessageCreate, db: Session = De
 async def get_contact_messages(db: Session = Depends(get_db)):
     messages = db.query(ContactMessage).order_by(ContactMessage.timestamp.desc()).limit(20).all()
     return messages
+
+@admin_router.delete("/messages/{message_id}", status_code=status.HTTP_200_OK, dependencies=[Depends(get_current_admin_user)])
+async def delete_contact_message(message_id: int, db: Session = Depends(get_db)):
+    message = db.query(ContactMessage).filter(ContactMessage.message_id == message_id).first()
+    if not message:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found.")
+
+    db.delete(message)
+    db.commit()
+    return {"message": "Message deleted successfully."}
     
 # --- App Router Integration ---
 app.include_router(auth_router, tags=["Authentication"])
@@ -904,5 +912,6 @@ def on_startup():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+
 
 
