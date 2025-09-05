@@ -15,6 +15,11 @@ from sqlalchemy.orm import sessionmaker, Session, relationship
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+
+from slowapi.util import get_remote_address
+
+from slowapi.errors import RateLimitExceeded
 # --- Configuration ---
 # Reads the database URL from an environment variable for deployment
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./parkinglot.db")
@@ -808,6 +813,7 @@ def on_startup():
     try:
         # Create users if they don't exist
         print("--- Database connection established successfully. Initializing data... ---")
+        made_changes = False
         if not db.query(SystemUser).first():
             db.add(SystemUser(username="admin", password_hash=get_password_hash("admin123"), role="Administrator"))
             db.add(SystemUser(username="attendant1", password_hash=get_password_hash("attendant123"), role="Attendant"))
@@ -824,28 +830,33 @@ def on_startup():
             db.flush() # This assigns the IDs to lot_a, lot_b, and lot_c
 
             spots_to_add = []
-            # Add 30 spots to Lot A
-            for i in range(1, 11): spots_to_add.append(ParkingSpot(lot_id=lot_a.lot_id, spot_number=f"A{i}", spot_size="Motorcycle"))
-            for i in range(11, 21): spots_to_add.append(ParkingSpot(lot_id=lot_a.lot_id, spot_number=f"A{i}", spot_size="Compact"))
-            for i in range(21, 31): spots_to_add.append(ParkingSpot(lot_id=lot_a.lot_id, spot_number=f"A{i}", spot_size="Large"))
+            # Add 100 spots to Lot A
+            for i in range(1, 41): spots_to_add.append(ParkingSpot(lot_id=lot_a.lot_id, spot_number=f"A{i}", spot_size="Motorcycle"))
+            for i in range(41, 71): spots_to_add.append(ParkingSpot(lot_id=lot_a.lot_id, spot_number=f"A{i}", spot_size="Compact"))
+            for i in range(71, 101): spots_to_add.append(ParkingSpot(lot_id=lot_a.lot_id, spot_number=f"A{i}", spot_size="Large"))
             
             # Add 30 spots to Lot B
-            for i in range(1, 11): spots_to_add.append(ParkingSpot(lot_id=lot_b.lot_id, spot_number=f"B{i}", spot_size="Motorcycle"))
-            for i in range(11, 21): spots_to_add.append(ParkingSpot(lot_id=lot_b.lot_id, spot_number=f"B{i}", spot_size="Compact"))
-            for i in range(21, 31): spots_to_add.append(ParkingSpot(lot_id=lot_b.lot_id, spot_number=f"B{i}", spot_size="Large"))
+            for i in range(1, 31): spots_to_add.append(ParkingSpot(lot_id=lot_b.lot_id, spot_number=f"B{i}", spot_size="Motorcycle"))
+            for i in range(41, 71): spots_to_add.append(ParkingSpot(lot_id=lot_b.lot_id, spot_number=f"B{i}", spot_size="Compact"))
+            for i in range(71, 31): spots_to_add.append(ParkingSpot(lot_id=lot_b.lot_id, spot_number=f"B{i}", spot_size="Large"))
             
             # Add 30 spots to Lot C
-            for i in range(1, 11): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Motorcycle"))
-            for i in range(11, 21): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Compact"))
-            for i in range(21, 31): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Large"))
-
+            for i in range(1, 41): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Motorcycle"))
+            for i in range(41, 71): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Compact"))
+            for i in range(71, 101): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Large"))
             db.bulk_save_objects(spots_to_add)
+            made_changes = True
 
         if not db.query(Penalty).first():
             db.add(Penalty(penalty_type="LOST_TICKET_MOTORCYCLE", amount=100.00))
             db.add(Penalty(penalty_type="LOST_TICKET_COMPACT", amount=250.00))
             db.add(Penalty(penalty_type="LOST_TICKET_LARGE", amount=500.00))
+            made_changes = True
+
+        if made_changes:
             db.commit()
+            print("--- Initial data committed to the database. ---")
+
     finally:
         db.close()
 
