@@ -135,7 +135,15 @@ class Payment(Base):
     ticket = relationship("Ticket", back_populates="payment")
     penalty = relationship("Penalty")
     processor = relationship("SystemUser")
-
+class ContactMessage(Base):
+    __tablename__ = "ContactMessage"
+    message_id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False)
+    message = Column(String(1000), nullable=False)
+    timestamp = Column(TIMESTAMP, nullable=False, default=datetime.utcnow)
+    is_resolved = Column(Boolean, default=False)
+    
 # --- Pydantic Models ---
 
 class TokenData(BaseModel):
@@ -274,6 +282,20 @@ class OccupancyReportResponse(BaseModel):
     occupancy_by_lot: Dict[str, float] # Lot Name -> Average Occupancy %
     average_duration_by_vehicle_type: Dict[str, float] # Type -> Avg minutes
 
+class ContactMessageCreate(BaseModel):
+    name: str
+    email: str
+    message: str
+
+class ContactMessageResponse(BaseModel):
+    message_id: int
+    name: str
+    email: str
+    message: str
+    timestamp: datetime
+    is_resolved: bool
+    class Config:
+        from_attributes = True
 
 
 # --- Database Dependency ---
@@ -797,12 +819,30 @@ async def get_occupancy_report(
         "occupancy_by_lot": dict(occupancy_by_lot_raw),
         "average_duration_by_vehicle_type": dict(avg_duration_query)
     }
+    
+contact_router = FastAPI().router
+@contact_router.post("/contact/submit", status_code=status.HTTP_201_CREATED)
+async def submit_contact_message(request: ContactMessageCreate, db: Session = Depends(get_db)):
+    new_message = ContactMessage(
+        name=request.name,
+        email=request.email,
+        message=request.message
+    )
+    db.add(new_message)
+    db.commit()
+    return {"message": "Your message has been received."}
 
+@admin_router.get("/messages", response_model=List[ContactMessageResponse], dependencies=[Depends(get_current_admin_user)])
+async def get_contact_messages(db: Session = Depends(get_db)):
+    messages = db.query(ContactMessage).order_by(ContactMessage.timestamp.desc()).limit(20).all()
+    return messages
+    
 # --- App Router Integration ---
 app.include_router(auth_router, tags=["Authentication"])
 app.include_router(entry_router, tags=["Entry Terminal"])
 app.include_router(exit_router, tags=["Exit Terminal"])
 app.include_router(admin_router, prefix="/admin", tags=["Administration"])
+app.include_router(contact_router, tags=["Contact"])
 
 # --- Application Startup Event ---
 @app.on_event("startup")
@@ -864,3 +904,4 @@ def on_startup():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+
