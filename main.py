@@ -14,9 +14,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
+
 # --- Configuration ---
 # Reads the database URL from an environment variable for deployment
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./parkinglot.db")
@@ -382,9 +380,19 @@ async def get_entry_config():
         },
         "supported_vehicle_types": ["Motorcycle", "Compact", "Large"]
     }
-
+VALID_STATE_CODES = {
+    "AN", "AP", "AR", "AS", "BR", "CH", "CG", "DD", "DL", "GA", "GJ", "HR",
+    "HP", "JK", "JH", "KA", "KL", "LA", "LD", "MP", "MH", "MN", "ML", "MZ",
+    "NL", "OD", "PY", "PB", "RJ", "SK", "TN", "TS", "TR", "UP", "UK", "WB"
+}
 @entry_router.post("/entry/ticket", response_model=EntryTicketResponse, status_code=status.HTTP_201_CREATED)
 async def create_ticket(request: EntryTicketRequest, db: Session = Depends(get_db)):
+    vehicle_number = request.vehicle_number.strip().upper()
+    if len(vehicle_number) < 2 or vehicle_number[:2] not in VALID_STATE_CODES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid vehicle number. Must start with a valid 2-letter state code (e.g., UP, DL, MH)."
+        )
     # Map vehicle type to spot size
     size_map = {"Motorcycle": "Motorcycle", "Compact": "Compact", "Large": "Large"}
     required_size = size_map.get(request.vehicle_type)
@@ -406,7 +414,13 @@ async def create_ticket(request: EntryTicketRequest, db: Session = Depends(get_d
         vehicle = Vehicle(vehicle_number=request.vehicle_number, vehicle_type=request.vehicle_type)
         db.add(vehicle)
         db.flush()
+    existing_active_ticket = db.query(Ticket).filter(
+        Ticket.vehicle_id == vehicle.vehicle_id,
+        Ticket.status == 'active'
+    ).first()
 
+    if existing_active_ticket:
+        raise HTTPException(status_code=409, detail=f"Vehicle {request.vehicle_number} is already parked.")
     # Create ticket and update spot status
     new_ticket = Ticket(vehicle_id=vehicle.vehicle_id, spot_id=available_spot.spot_id)
     available_spot.status = 'occupied'
@@ -794,7 +808,6 @@ def on_startup():
     try:
         # Create users if they don't exist
         print("--- Database connection established successfully. Initializing data... ---")
-        made_changes = False
         if not db.query(SystemUser).first():
             db.add(SystemUser(username="admin", password_hash=get_password_hash("admin123"), role="Administrator"))
             db.add(SystemUser(username="attendant1", password_hash=get_password_hash("attendant123"), role="Attendant"))
@@ -827,16 +840,12 @@ def on_startup():
             for i in range(21, 31): spots_to_add.append(ParkingSpot(lot_id=lot_c.lot_id, spot_number=f"C{i}", spot_size="Large"))
 
             db.bulk_save_objects(spots_to_add)
-            made_changes = True
 
         if not db.query(Penalty).first():
             db.add(Penalty(penalty_type="LOST_TICKET_MOTORCYCLE", amount=100.00))
             db.add(Penalty(penalty_type="LOST_TICKET_COMPACT", amount=250.00))
             db.add(Penalty(penalty_type="LOST_TICKET_LARGE", amount=500.00))
-            made_changes = True
-        if made_changes:
             db.commit()
-            print("--- Initial data committed to the database. ---")
     finally:
         db.close()
 
@@ -844,5 +853,3 @@ def on_startup():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
-
-
